@@ -1017,6 +1017,74 @@ elif page == "🔮 Risk Prediction":
                 else:
                     st.markdown('<div style="background: #fffbeb; padding: 1.5rem; border-radius: 12px; border: 2px solid #f6ad55; text-align: center; margin-top: 1rem;"><h3 style="color: #c05621;">⚡ Models Disagree</h3><p>The models give different predictions. Consider the more cautious approach and monitor your mental health.</p></div>', unsafe_allow_html=True)
         
+        # Example Scenarios Section
+        st.markdown('<div class="section-header"><h2>📋 Example Scenarios</h2></div>', unsafe_allow_html=True)
+        st.markdown("""
+        <p style="color: #6c757d; text-align: center; margin-bottom: 1.5rem;">
+            Use these hypothetical profiles to test the prediction models and understand what factors contribute to risk.
+        </p>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1.5rem; border: 2px solid #e53e3e; margin-bottom: 1rem;">
+                <h3 style="color: #c53030; margin-top: 0; text-align: center;">⚠️ At Risk Profile</h3>
+                <hr style="border-color: #e53e3e; opacity: 0.3;">
+                <table style="width: 100%; color: #1e3a5f; font-size: 0.9rem;">
+                    <tr><td style="padding: 4px 0;"><strong>👤 Gender:</strong></td><td>Female</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Student</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>31-60 days</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>😰 Mood Swings:</strong></td><td>Medium</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Maybe</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👥 Social Weakness:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👨‍👩‍👧 Family History:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💊 Treatment:</strong></td><td>No</td></tr>
+                </table>
+                <hr style="border-color: #e53e3e; opacity: 0.3;">
+                <p style="color: #c53030; font-size: 0.85rem; margin-bottom: 0; text-align: center;">
+                    <strong>Key Risk Factors:</strong> Extended isolation, mental health history, coping struggles, social weakness, and no treatment.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div style="background: linear-gradient(145deg, #f0fff4 0%, #c6f6d5 100%); border-radius: 12px; padding: 1.5rem; border: 2px solid #38a169; margin-bottom: 1rem;">
+                <h3 style="color: #276749; margin-top: 0; text-align: center;">✅ Not At Risk Profile</h3>
+                <hr style="border-color: #38a169; opacity: 0.3;">
+                <table style="width: 100%; color: #1e3a5f; font-size: 0.9rem;">
+                    <tr><td style="padding: 4px 0;"><strong>👤 Gender:</strong></td><td>Male</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Corporate</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>Go out Every day</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>😰 Mood Swings:</strong></td><td>Low</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👥 Social Weakness:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👨‍👩‍👧 Family History:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💊 Treatment:</strong></td><td>No</td></tr>
+                </table>
+                <hr style="border-color: #38a169; opacity: 0.3;">
+                <p style="color: #276749; font-size: 0.85rem; margin-bottom: 0; text-align: center;">
+                    <strong>Protective Factors:</strong> Regular outdoor activity, low mood swings, no coping struggles, strong social connections, work engagement.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="info-card" style="margin-top: 1rem;">
+            <h4 style="color: #1e3a5f; margin-top: 0;">💡 Try It Yourself</h4>
+            <p style="color: #6c757d; margin-bottom: 0;">
+                Use the form above to enter these profiles and verify the model predictions. 
+                The <strong>Decision Tree</strong> achieves ~99.5% accuracy on these patterns!
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("""
         <div class="info-card" style="margin-top: 2rem;">
             <h4 style="color: #1e3a5f;">🆘 Mental Health Resources</h4>
