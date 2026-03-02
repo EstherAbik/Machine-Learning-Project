@@ -5,7 +5,7 @@ Stress Trajectory Prediction - Mental Health Analysis Platform
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
+import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -144,20 +144,13 @@ st.markdown("""
 @st.cache_resource
 def load_models():
     try:
-        with open('models/decision_tree_model.pkl', 'rb') as f:
-            dt_model = pickle.load(f)
-        with open('models/naive_bayes_model.pkl', 'rb') as f:
-            nb_model = pickle.load(f)
-        with open('models/scaler.pkl', 'rb') as f:
-            scaler = pickle.load(f)
-        with open('models/minmax_scaler.pkl', 'rb') as f:
-            minmax_scaler = pickle.load(f)
-        with open('models/encoders.pkl', 'rb') as f:
-            encoders = pickle.load(f)
-        with open('models/feature_columns.pkl', 'rb') as f:
-            feature_columns = pickle.load(f)
-        with open('models/model_results.pkl', 'rb') as f:
-            model_results = pickle.load(f)
+        dt_model = joblib.load('models/decision_tree_model.pkl')
+        nb_model = joblib.load('models/naive_bayes_model.pkl')
+        scaler = joblib.load('models/scaler.pkl')
+        minmax_scaler = joblib.load('models/minmax_scaler.pkl')
+        encoders = joblib.load('models/encoders.pkl')
+        feature_columns = joblib.load('models/feature_columns.pkl')
+        model_results = joblib.load('models/model_results.pkl')
         return dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_results
     except Exception as e:
         st.error(f"Error loading models: {e}")
@@ -187,7 +180,7 @@ with st.sidebar:
     
     page = st.radio(
         "Navigation",
-        ["🏠 Home", "📊 Data Insights", "🎯 Model Performance", "🔮 Risk Prediction"],
+        ["🏠 Problem Statement", "📊 EDA & Insights", "🔧 Methodology", "🎯 Model Performance", "🏆 Final Results", "🔮 Risk Prediction"],
         label_visibility="collapsed"
     )
     
@@ -197,8 +190,14 @@ with st.sidebar:
     <div style="background: linear-gradient(145deg, #e8f4fd 0%, #d4e8f7 100%); 
                 padding: 1rem; border-radius: 12px; margin-top: 1rem;">
         <p style="font-size: 0.85rem; color: #1e3a5f; margin: 0; text-align: center;">
-            <strong>💡 Quick Tip</strong><br>
-            Early detection of stress patterns can help prevent burnout.
+            <strong>📋 Project Components</strong><br>
+            ✅ Problem Statement<br>
+            ✅ EDA & Visualizations<br>
+            ✅ Data Preprocessing<br>
+            ✅ 2 ML Algorithms<br>
+            ✅ Hyperparameter Tuning<br>
+            ✅ Model Evaluation<br>
+            ✅ Final Model Selection
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -209,30 +208,66 @@ df = load_data()
 dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_results = load_models()
 
 
-# HOME PAGE
-if page == "🏠 Home":
+# =====================================================
+# PAGE 1: PROBLEM STATEMENT
+# =====================================================
+if page == "🏠 Problem Statement":
     st.markdown("""
     <div class="main-header">
-        <h1>�� Stress Trajectory Prediction</h1>
-        <p>Leveraging Machine Learning for Early Mental Health Risk Detection</p>
+        <h1>🧠 Stress Trajectory Prediction</h1>
+        <p>A Machine Learning Approach to Mental Health Risk Assessment</p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="info-card">
-        <p>
-            <strong>Welcome to the Stress Trajectory Prediction Platform</strong> — an AI-powered tool designed 
-            to analyze behavioral and lifestyle patterns to identify individuals who may be at risk of 
-            stress-related mental health challenges.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Problem Definition
+    st.markdown('<div class="section-header"><h2>📌 Problem Definition</h2></div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="section-header"><h2>📈 Platform Overview</h2></div>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="info-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">🎯 Classification Problem</h4>
+            <p>
+                <strong>Goal:</strong> Predict whether an individual is at risk of developing growing stress<br><br>
+                <strong>Type:</strong> Binary Classification<br><br>
+                <strong>Target Variable:</strong> <code>Stress_Risk</code><br>
+                • Class 1: "At Risk" 🔴<br>
+                • Class 0: "Not At Risk" 🟢
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1.25rem; border-left: 4px solid #e53e3e; margin: 1rem 0;">
+            <h4 style="color: #c53030; margin-top: 0;">⚠️ Why We Prioritize RECALL</h4>
+            <p style="color: #c53030;">
+                In mental health screening, <strong>missing someone who needs help is far worse than a false alarm</strong>.<br><br>
+                <strong>False Negative:</strong> Missed at-risk person → No intervention → Potential crisis ❌<br><br>
+                <strong>False Positive:</strong> Extra check-in → Minor inconvenience → Still helpful ⚡
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Why This Matters
+    st.markdown('<div class="section-header"><h2>� Why Mental Health Screening Matters</h2></div>', unsafe_allow_html=True)
     
     col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown('<div class="metric-card"><div class="metric-value">1 in 5</div><div class="metric-label">Adults with Mental Health Issues</div></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="metric-card"><div class="metric-value">#1</div><div class="metric-label">Stress as Depression Trigger</div></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="metric-card"><div class="metric-value">70%</div><div class="metric-label">Preventable with Early Detection</div></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown('<div class="metric-card"><div class="metric-value">AI</div><div class="metric-label">Enables Scalable Screening</div></div>', unsafe_allow_html=True)
+    
+    # Dataset Overview
+    st.markdown('<div class="section-header"><h2>📊 Dataset Overview</h2></div>', unsafe_allow_html=True)
     
     if df is not None:
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df):,}</div><div class="metric-label">Total Records</div></div>', unsafe_allow_html=True)
         with col2:
@@ -240,43 +275,21 @@ if page == "🏠 Home":
         with col3:
             st.markdown('<div class="metric-card"><div class="metric-value">2</div><div class="metric-label">ML Models</div></div>', unsafe_allow_html=True)
         with col4:
-            if model_results:
-                best_recall = max(model_results['Decision Tree']['Recall'], model_results['Naive Bayes']['Recall'])
-                st.markdown(f'<div class="metric-card"><div class="metric-value">{best_recall:.1%}</div><div class="metric-label">Best Recall</div></div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="section-header"><h2>🎯 Key Features</h2></div>', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("""
-        <div class="metric-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">📊 Data Analysis</h4>
-            <p style="color: #6c757d;">Explore patterns through interactive visualizations.</p>
-        </div>
-        <div class="metric-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">🔮 Risk Prediction</h4>
-            <p style="color: #6c757d;">Get instant stress risk assessments using ML models.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown("""
-        <div class="metric-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">🤖 Dual Model Approach</h4>
-            <p style="color: #6c757d;">Compare Decision Tree and Naive Bayes predictions.</p>
-        </div>
-        <div class="metric-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">📈 Performance Metrics</h4>
-            <p style="color: #6c757d;">View detailed accuracy, precision, recall scores.</p>
-        </div>
-        """, unsafe_allow_html=True)
+            st.markdown('<div class="metric-card"><div class="metric-value">Recall</div><div class="metric-label">Primary Metric</div></div>', unsafe_allow_html=True)
+        
+        # Show sample data
+        st.markdown("**Sample Data:**")
+        st.dataframe(df.head(5), use_container_width=True)
 
 
-# DATA INSIGHTS PAGE
-elif page == "📊 Data Insights":
+# =====================================================
+# PAGE 2: EDA & INSIGHTS
+# =====================================================
+elif page == "📊 EDA & Insights":
     st.markdown("""
     <div class="main-header">
-        <h1>📊 Data Insights</h1>
-        <p>Exploring Patterns in Mental Health Data</p>
+        <h1>📊 Exploratory Data Analysis</h1>
+        <p>Understanding Patterns in Mental Health Data</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -511,3 +524,348 @@ elif page == "🔮 Risk Prediction":
         """, unsafe_allow_html=True)
     else:
         st.error("⚠️ Models not loaded. Ensure model files are in 'models/' folder.")
+
+
+# =====================================================
+# PAGE 5: METHODOLOGY
+# =====================================================
+elif page == "🔧 Methodology":
+    st.markdown("""
+    <div class="main-header">
+        <h1>🔧 Methodology</h1>
+        <p>Data Preprocessing & Machine Learning Pipeline</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Data Preprocessing Section
+    st.markdown('<div class="section-header"><h2>🧹 Data Preprocessing</h2></div>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="metric-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">1️⃣ Data Cleaning</h4>
+            <ul style="color: #6c757d; margin-bottom: 0;">
+                <li>Removed <strong>Timestamp</strong> column (not predictive)</li>
+                <li>Handled missing values</li>
+                <li>Removed duplicate records</li>
+                <li>Validated data types</li>
+            </ul>
+        </div>
+        <div class="metric-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">3️⃣ Feature Scaling</h4>
+            <ul style="color: #6c757d; margin-bottom: 0;">
+                <li><strong>StandardScaler</strong> for Decision Tree</li>
+                <li><strong>MinMaxScaler</strong> for Naive Bayes (non-negative values required)</li>
+                <li>Ensures features contribute equally</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="metric-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">2️⃣ Encoding Categorical Features</h4>
+            <ul style="color: #6c757d; margin-bottom: 0;">
+                <li><strong>Label Encoding</strong> for binary features</li>
+                <li>Gender, Occupation, Self-Employed, etc.</li>
+                <li>Converted text labels to numerical values</li>
+            </ul>
+        </div>
+        <div class="metric-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">4️⃣ Train-Test Split</h4>
+            <ul style="color: #6c757d; margin-bottom: 0;">
+                <li><strong>80% Training</strong> / <strong>20% Testing</strong></li>
+                <li>Stratified sampling to preserve class balance</li>
+                <li><code>random_state=42</code> for reproducibility</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Class Imbalance Section
+    st.markdown('<div class="section-header"><h2>⚖️ Handling Class Imbalance</h2></div>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1.25rem; border-left: 4px solid #e53e3e; margin: 1rem 0;">
+            <h4 style="color: #c53030; margin-top: 0;">⚠️ The Problem</h4>
+            <p style="color: #c53030;">
+                Original dataset had <strong>imbalanced classes</strong>:<br>
+                • More "Not At Risk" samples<br>
+                • Models tend to predict majority class<br>
+                • Poor recall on minority class (At Risk)
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background: linear-gradient(145deg, #f0fff4 0%, #c6f6d5 100%); border-radius: 12px; padding: 1.25rem; border-left: 4px solid #38a169; margin: 1rem 0;">
+            <h4 style="color: #276749; margin-top: 0;">✅ Our Solutions</h4>
+            <p style="color: #276749;">
+                <strong>Decision Tree:</strong> <code>class_weight='balanced'</code><br>
+                • Automatically adjusts weights<br><br>
+                <strong>Naive Bayes:</strong> <code>SMOTE</code> oversampling<br>
+                • Synthetic Minority Over-sampling Technique
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # ML Algorithms Section
+    st.markdown('<div class="section-header"><h2>🤖 Machine Learning Algorithms</h2></div>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="metric-card" style="border-top: 4px solid #2d5a87;">
+            <h3 style="color: #1e3a5f; text-align: center;">🌳 Decision Tree Classifier</h3>
+            <hr style="border: 1px solid #e0e0e0;">
+            <p style="color: #6c757d;">
+                <strong>How it works:</strong><br>
+                Creates a tree-like model of decisions based on feature values. 
+                Splits data at each node to maximize information gain.
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Advantages:</strong><br>
+                ✓ Easy to interpret and visualize<br>
+                ✓ Handles non-linear relationships<br>
+                ✓ No feature scaling required (but used for consistency)
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Key Hyperparameters Tuned:</strong><br>
+                • <code>max_depth</code>: Tree depth limit<br>
+                • <code>min_samples_split</code>: Min samples to split<br>
+                • <code>class_weight='balanced'</code>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="metric-card" style="border-top: 4px solid #38a169;">
+            <h3 style="color: #1e3a5f; text-align: center;">📊 Complement Naive Bayes</h3>
+            <hr style="border: 1px solid #e0e0e0;">
+            <p style="color: #6c757d;">
+                <strong>How it works:</strong><br>
+                Probabilistic classifier using Bayes' theorem. 
+                Complement NB is designed specifically for imbalanced datasets.
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Advantages:</strong><br>
+                ✓ Fast training and prediction<br>
+                ✓ Works well with small datasets<br>
+                ✓ Better for imbalanced classes
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Key Hyperparameters Tuned:</strong><br>
+                • <code>alpha</code>: Smoothing parameter<br>
+                • <code>norm</code>: Weight normalization<br>
+                • Combined with <code>SMOTE</code> oversampling
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Hyperparameter Tuning
+    st.markdown('<div class="section-header"><h2>🎛️ Hyperparameter Tuning</h2></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-card">
+        <h4 style="color: #1e3a5f; margin-top: 0;">GridSearchCV with Cross-Validation</h4>
+        <p style="color: #6c757d;">
+            We used <strong>GridSearchCV</strong> with <strong>5-fold cross-validation</strong> to find optimal hyperparameters.
+            The search was optimized for <strong>Recall</strong> (our primary metric) to maximize detection of at-risk individuals.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="metric-card">
+            <h4 style="color: #2d5a87;">🌳 Decision Tree Grid</h4>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 8px; font-size: 0.9rem;">
+{
+  'max_depth': [3, 5, 7, 10, None],
+  'min_samples_split': [2, 5, 10],
+  'min_samples_leaf': [1, 2, 4],
+  'class_weight': ['balanced']
+}
+            </pre>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="metric-card">
+            <h4 style="color: #38a169;">📊 Naive Bayes Grid</h4>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 8px; font-size: 0.9rem;">
+{
+  'classifier__alpha': [0.1, 0.5, 1.0],
+  'classifier__norm': [True, False],
+  'smote__k_neighbors': [3, 5, 7]
+}
+            </pre>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# =====================================================
+# PAGE 6: FINAL RESULTS
+# =====================================================
+elif page == "🏆 Final Results":
+    st.markdown("""
+    <div class="main-header">
+        <h1>🏆 Final Results & Model Selection</h1>
+        <p>Comparing Models and Justifying Our Choice</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if model_results:
+        # Model Comparison Table
+        st.markdown('<div class="section-header"><h2>📊 Model Comparison</h2></div>', unsafe_allow_html=True)
+        
+        dt = model_results['Decision Tree']
+        nb = model_results['Naive Bayes']
+        
+        # Create comparison dataframe
+        comparison_df = pd.DataFrame({
+            'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+            'Decision Tree': [f"{dt['Accuracy']:.2%}", f"{dt['Precision']:.2%}", f"{dt['Recall']:.2%}", f"{dt['F1']:.2%}"],
+            'Naive Bayes': [f"{nb['Accuracy']:.2%}", f"{nb['Precision']:.2%}", f"{nb['Recall']:.2%}", f"{nb['F1']:.2%}"],
+            'Winner': ['', '', '', '']
+        })
+        
+        # Determine winners
+        comparison_df.loc[0, 'Winner'] = '🌳' if dt['Accuracy'] >= nb['Accuracy'] else '📊'
+        comparison_df.loc[1, 'Winner'] = '🌳' if dt['Precision'] >= nb['Precision'] else '📊'
+        comparison_df.loc[2, 'Winner'] = '🌳' if dt['Recall'] >= nb['Recall'] else '📊'
+        comparison_df.loc[3, 'Winner'] = '🌳' if dt['F1'] >= nb['F1'] else '📊'
+        
+        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+        
+        # Visual Comparison
+        fig = go.Figure()
+        metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+        dt_values = [dt['Accuracy'], dt['Precision'], dt['Recall'], dt['F1']]
+        nb_values = [nb['Accuracy'], nb['Precision'], nb['Recall'], nb['F1']]
+        
+        fig.add_trace(go.Bar(name='Decision Tree 🌳', x=metrics, y=dt_values,
+                            marker_color='#2d5a87', text=[f'{v:.1%}' for v in dt_values], textposition='outside'))
+        fig.add_trace(go.Bar(name='Naive Bayes 📊', x=metrics, y=nb_values,
+                            marker_color='#38a169', text=[f'{v:.1%}' for v in nb_values], textposition='outside'))
+        fig.update_layout(barmode='group', title='Side-by-Side Performance Comparison',
+                         yaxis=dict(range=[0, 1.15], tickformat='.0%'), height=450)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Evaluation Metrics Explanation
+        st.markdown('<div class="section-header"><h2>📖 Understanding the Metrics</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            <div class="metric-card">
+                <h4 style="color: #1e3a5f;">🎯 Accuracy</h4>
+                <p style="color: #6c757d;">Overall correct predictions / Total predictions.<br>
+                <em>Limitation: Misleading with imbalanced data.</em></p>
+            </div>
+            <div class="metric-card">
+                <h4 style="color: #1e3a5f;">🔴 Recall (Sensitivity)</h4>
+                <p style="color: #6c757d;">Of all actual positives, how many did we catch?<br>
+                <strong style="color: #e53e3e;">OUR PRIMARY METRIC - minimizes missed at-risk individuals.</strong></p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="metric-card">
+                <h4 style="color: #1e3a5f;">🎯 Precision</h4>
+                <p style="color: #6c757d;">Of all predicted positives, how many were correct?<br>
+                <em>Important but secondary to Recall here.</em></p>
+            </div>
+            <div class="metric-card">
+                <h4 style="color: #1e3a5f;">⚖️ F1 Score</h4>
+                <p style="color: #6c757d;">Harmonic mean of Precision and Recall.<br>
+                <em>Good overall balance metric.</em></p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Final Model Selection
+        st.markdown('<div class="section-header"><h2>🏆 Final Model Selection</h2></div>', unsafe_allow_html=True)
+        
+        # Determine best model based on Recall
+        best_model = "Decision Tree" if dt['Recall'] >= nb['Recall'] else "Naive Bayes"
+        best_icon = "🌳" if best_model == "Decision Tree" else "📊"
+        best_recall = max(dt['Recall'], nb['Recall'])
+        
+        st.markdown(f"""
+        <div style="background: linear-gradient(145deg, #f0fff4 0%, #c6f6d5 100%); border-radius: 16px; padding: 2rem; border: 2px solid #38a169; text-align: center; margin: 1rem 0;">
+            <h2 style="color: #276749; margin-top: 0;">{best_icon} Selected Model: {best_model}</h2>
+            <div style="font-size: 3rem; margin: 1rem 0;">🏆</div>
+            <h3 style="color: #276749;">Recall Score: {best_recall:.1%}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Justification
+        st.markdown("""
+        <div class="info-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">📝 Justification for Model Selection</h4>
+            <p style="color: #6c757d;">
+                <strong>Why we prioritize Recall:</strong><br>
+                In mental health screening, our goal is to identify as many at-risk individuals as possible. 
+                A <strong>False Negative</strong> (missing someone who needs help) has far more severe consequences 
+                than a <strong>False Positive</strong> (flagging someone who is actually fine for a follow-up).
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Trade-off accepted:</strong><br>
+                We accept slightly lower precision (some false alarms) in exchange for higher recall 
+                (catching more at-risk individuals). The cost of a missed diagnosis far outweighs the 
+                cost of an extra check-in.
+            </p>
+            <p style="color: #6c757d;">
+                <strong>Techniques used to maximize Recall:</strong><br>
+                • Decision Tree with <code>class_weight='balanced'</code><br>
+                • Naive Bayes with <code>SMOTE</code> oversampling<br>
+                • Hyperparameter tuning optimized for Recall
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Key Takeaways
+        st.markdown('<div class="section-header"><h2>📌 Key Takeaways</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class="metric-card" style="text-align: center;">
+                <div style="font-size: 2rem;">✅</div>
+                <h4 style="color: #1e3a5f;">Binary Classification</h4>
+                <p style="color: #6c757d;">At Risk vs Not At Risk</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="metric-card" style="text-align: center;">
+                <div style="font-size: 2rem;">🤖</div>
+                <h4 style="color: #1e3a5f;">2 ML Models</h4>
+                <p style="color: #6c757d;">Decision Tree & Naive Bayes</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class="metric-card" style="text-align: center;">
+                <div style="font-size: 2rem;">🔴</div>
+                <h4 style="color: #1e3a5f;">Recall Priority</h4>
+                <p style="color: #6c757d;">Minimize missed diagnoses</p>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ Model results not available. Please ensure models are trained and saved.")
