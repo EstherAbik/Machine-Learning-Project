@@ -7,8 +7,8 @@ import seaborn as sns
 
 # Page config
 st.set_page_config(
-    page_title="Stress Risk Prediction",
-    page_icon="🧠",
+    page_title="Stress Trajectory Prediction | Mental Health",
+    page_icon="🧠💚",
     layout="wide"
 )
 
@@ -33,8 +33,10 @@ except:
     dt_model = nb_model = scaler = minmax_scaler = encoders = feature_columns = results = None
 
 # Sidebar navigation
-st.sidebar.title("🧭 Navigation")
-section = st.sidebar.radio("Go to:", [
+st.sidebar.markdown("## 🧠💚 Stress Trajectory")
+st.sidebar.markdown("*Mental Health Risk Assessment*")
+st.sidebar.markdown("---")
+section = st.sidebar.radio("Navigate:", [
     "1. Introduction",
     "2. EDA Visualizations",
     "3. Feature Selection",
@@ -44,43 +46,70 @@ section = st.sidebar.radio("Go to:", [
 
 # ============== SECTION 1: INTRODUCTION ==============
 if section == "1. Introduction":
-    st.title("🧠 Stress Risk Prediction")
+    st.markdown("""
+    <div style="text-align: center;">
+        <h1>🧠💚 STRESS TRAJECTORY PREDICTION</h1>
+        <h3><em>A Machine Learning Approach to Mental Health Risk Assessment</em></h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Mental health awareness banner
+    st.success("💚 **Mental Health Matters** | 🤖 **AI for Good** | 🛡️ **Early Intervention**")
+    
+    st.markdown("""
+    > *"Mental health is not a destination, but a process. It's about how you drive, not where you're going."* — Noam Shpancer
+    """)
+    
     st.markdown("---")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.header("📌 Project Overview")
+        st.header("🎯 Project Mission")
         st.write("""
-        This app predicts if someone is **at risk of growing stress**.
+        This project uses **Machine Learning** to identify individuals who may be 
+        at risk of developing chronic stress, enabling **early intervention** and 
+        support for better mental health outcomes.
         
-        **Task:** Binary Classification  
-        **Target:** Stress Risk (At Risk / Not At Risk)
+        | Aspect | Description |
+        |--------|-------------|
+        | **Goal** | Predict stress trajectory risk |
+        | **Target** | At Risk 🔴 vs Not At Risk 🟢 |
+        | **Metric** | **Recall** - Catch all at-risk cases |
         """)
         
-        st.header("🎯 Goal")
-        st.write("Identify at-risk individuals early for intervention.")
-    
     with col2:
-        st.header("⚠️ Why Recall Matters")
-        st.warning("""
-        **Missing at-risk people is costly!**
-        
-        - False Negative = missed someone who needs help
-        - We prioritize **RECALL** to catch all at-risk cases
+        st.header("💡 Why This Matters")
+        st.info("""
+        🔹 **1 in 5** adults experience mental health challenges yearly  
+        🔹 **Stress** is the #1 trigger for anxiety & depression  
+        🔹 **Early detection** prevents escalation to severe conditions  
+        🔹 **AI screening** enables scalable mental health support
         """)
         
-        st.header("📊 Evaluation Priority")
-        st.info("""
-        1. **Recall** (catch all at-risk cases)
-        2. **F1-Score** (balance)
-        3. **Accuracy** (overall)
+        st.header("⚠️ Why We Prioritize RECALL")
+        st.warning("""
+        **Missing someone who needs help is far worse than a false alarm.**
+        
+        | Error | Impact |
+        |-------|--------|
+        | **False Negative** ❌ | Missed at-risk → No help → Crisis |
+        | **False Positive** ⚡ | Extra check-in → Still helpful |
         """)
 
 # ============== SECTION 2: EDA VISUALIZATIONS ==============
 elif section == "2. EDA Visualizations":
-    st.title("📊 Exploratory Data Analysis")
+    st.markdown("""
+    <div style="text-align: center;">
+        <h1>📊 Exploratory Data Analysis</h1>
+        <h4><em>Understanding the Mental Health Landscape</em></h4>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
+    
+    st.info("🔍 Exploring how different factors relate to stress risk in our mental health dataset.")
     
     # Display saved plots if available
     col1, col2 = st.columns(2)
@@ -116,8 +145,15 @@ elif section == "2. EDA Visualizations":
 
 # ============== SECTION 3: FEATURE SELECTION ==============
 elif section == "3. Feature Selection":
-    st.title("🎯 Feature Selection")
+    st.markdown("""
+    <div style="text-align: center;">
+        <h1>🎯 Feature Selection</h1>
+        <h4><em>Identifying Key Mental Health Indicators</em></h4>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
+    
+    st.info("🔬 Statistical analysis to find which factors best predict stress risk.")
     
     if models_loaded:
         st.header("Selected Features")
@@ -141,8 +177,15 @@ elif section == "3. Feature Selection":
 
 # ============== SECTION 4: MODEL PERFORMANCE ==============
 elif section == "4. Model Performance":
-    st.title("📈 Model Performance")
+    st.markdown("""
+    <div style="text-align: center;">
+        <h1>🏆 Model Performance</h1>
+        <h4><em>Selecting the Best Mental Health Screening Model</em></h4>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
+    
+    st.info("🥇 Comparing models to find the best approach for identifying at-risk individuals.")
     
     if not models_loaded:
         st.error("⚠️ Models not found! Run the notebook first.")
@@ -210,18 +253,23 @@ elif section == "4. Model Performance":
 
 # ============== SECTION 5: MAKE PREDICTION ==============
 elif section == "5. Make Prediction":
-    st.title("🔮 Predict Stress Risk")
+    st.markdown("""
+    <div style="text-align: center;">
+        <h1>🔮 Predict Stress Trajectory</h1>
+        <h4><em>Mental Health Risk Assessment Tool</em></h4>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
     
     if not models_loaded:
         st.error("⚠️ Models not found! Run the notebook first.")
     else:
-        st.write("**Answer these questions to predict if someone is at risk of stress:**")
+        st.info("💚 Answer these questions to assess stress risk. This is a screening tool, not a diagnosis.")
         st.markdown("")
         
         model_choice = st.selectbox("Choose a model:", ["Decision Tree", "Naive Bayes"])
         
-        st.markdown("### 📋 Personal Information")
+        st.markdown("### 📋 Mental Health Assessment Questions")
         col1, col2 = st.columns(2)
         
         with col1:
@@ -321,7 +369,21 @@ elif section == "5. Make Prediction":
             
             # Simple confidence display
             st.metric(label="Confidence Level", value=f"{confidence:.0f}%")
+            
+            # Mental health resources
+            st.markdown("---")
+            st.markdown("### 💚 Mental Health Resources")
+            st.markdown("""
+            *If you or someone you know is struggling, help is available.*
+            
+            🇺🇸 **National Suicide Prevention Lifeline:** 988  
+            🌍 **Crisis Text Line:** Text HOME to 741741  
+            
+            *"It's okay to not be okay. What matters is that you seek help."* 💚
+            """)
 
 # Footer
 st.sidebar.markdown("---")
-st.sidebar.caption("Stress Risk Prediction App")
+st.sidebar.markdown("### 💚 Mental Health Matters")
+st.sidebar.caption("Stress Trajectory Prediction App")
+st.sidebar.markdown("*Early intervention saves lives.*")
