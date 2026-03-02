@@ -150,7 +150,27 @@ def load_models():
         minmax_scaler = joblib.load('models/minmax_scaler.pkl')
         encoders = joblib.load('models/encoders.pkl')
         feature_columns = joblib.load('models/feature_columns.pkl')
-        model_results = joblib.load('models/model_results.pkl')
+        raw_results = joblib.load('models/model_results.pkl')
+        
+        # Transform results to expected format
+        model_results = {
+            'Decision Tree': {
+                'Accuracy': raw_results.get('dt_accuracy', 0),
+                'Precision': raw_results.get('dt_precision', 0),
+                'Recall': raw_results.get('dt_recall', 0),
+                'F1': raw_results.get('dt_f1', 0),
+                'Confusion Matrix': raw_results.get('dt_cm', [[0,0],[0,0]])
+            },
+            'Naive Bayes': {
+                'Accuracy': raw_results.get('nb_accuracy', 0),
+                'Precision': raw_results.get('nb_precision', 0),
+                'Recall': raw_results.get('nb_recall', 0),
+                'F1': raw_results.get('nb_f1', 0),
+                'Confusion Matrix': raw_results.get('nb_cm', [[0,0],[0,0]])
+            },
+            'best_model': raw_results.get('best_model', 'Decision Tree'),
+            'class_labels': raw_results.get('class_labels', ['Not At Risk', 'At Risk'])
+        }
         return dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_results
     except Exception as e:
         st.error(f"Error loading models: {e}")
@@ -164,6 +184,19 @@ def load_data():
     except Exception as e:
         st.error(f"Error loading data: {e}")
         return None
+
+
+def get_encoder_classes(encoders, col_name, default_values):
+    """Helper function to get classes from LabelEncoder or return default"""
+    if col_name in encoders:
+        encoder = encoders[col_name]
+        # Check if it's a LabelEncoder (has classes_ attribute)
+        if hasattr(encoder, 'classes_'):
+            return list(encoder.classes_)
+        # If it's already a dict
+        elif isinstance(encoder, dict):
+            return list(encoder.keys())
+    return list(default_values)
 
 
 # SIDEBAR NAVIGATION
@@ -232,8 +265,8 @@ if page == "🏠 Problem Statement":
                 <strong>Goal:</strong> Predict whether an individual is at risk of developing growing stress<br><br>
                 <strong>Type:</strong> Binary Classification<br><br>
                 <strong>Target Variable:</strong> <code>Stress_Risk</code><br>
-                • Class 1: "At Risk" 🔴<br>
-                • Class 0: "Not At Risk" 🟢
+                • Class 1: "At Risk" <br>
+                • Class 0: "Not At Risk" 
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -241,11 +274,11 @@ if page == "🏠 Problem Statement":
     with col2:
         st.markdown("""
         <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1.25rem; border-left: 4px solid #e53e3e; margin: 1rem 0;">
-            <h4 style="color: #c53030; margin-top: 0;">⚠️ Why We Prioritize RECALL</h4>
+            <h4 style="color: #c53030; margin-top: 0;">Why We Prioritize RECALL</h4>
             <p style="color: #c53030;">
                 In mental health screening, <strong>missing someone who needs help is far worse than a false alarm</strong>.<br><br>
-                <strong>False Negative:</strong> Missed at-risk person → No intervention → Potential crisis ❌<br><br>
-                <strong>False Positive:</strong> Extra check-in → Minor inconvenience → Still helpful ⚡
+                <strong>False Negative:</strong> Missed at-risk person → No intervention → Potential crisis <br><br>
+                <strong>False Positive:</strong> Extra check-in → Minor inconvenience → Still helpful 
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -439,22 +472,22 @@ elif page == "🔮 Risk Prediction":
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            gender = st.selectbox("👤 Gender", list(encoders.get('Gender', {'Male': 0, 'Female': 1}).keys()))
-            occupation = st.selectbox("💼 Occupation", list(encoders.get('Occupation', {'Student': 0}).keys()))
-            self_employed = st.selectbox("🏢 Self Employed", list(encoders.get('self_employed', {'Yes': 0, 'No': 1}).keys()))
-            days_indoors = st.selectbox("🏠 Days Indoors", list(encoders.get('Days_Indoors', {'Go Out Every Day': 0}).keys()))
+            gender = st.selectbox("👤 Gender", get_encoder_classes(encoders, 'Gender', ['Male', 'Female']))
+            occupation = st.selectbox("💼 Occupation", get_encoder_classes(encoders, 'Occupation', ['Student', 'Corporate', 'Business', 'Housewife', 'Others']))
+            self_employed = st.selectbox("🏢 Self Employed", get_encoder_classes(encoders, 'self_employed', ['Yes', 'No']))
+            days_indoors = st.selectbox("🏠 Days Indoors", get_encoder_classes(encoders, 'Days_Indoors', ['Go out Every day', '1-14 days', '15-30 days', '31-60 days', 'More than 2 months']))
         
         with col2:
-            mood_swings = st.selectbox("😰 Mood Swings", list(encoders.get('Mood_Swings', {'Low': 0, 'Medium': 1, 'High': 2}).keys()))
-            coping_struggles = st.selectbox("💪 Coping Struggles", list(encoders.get('Coping_Struggles', {'Yes': 0, 'No': 1}).keys()))
-            work_interest = st.selectbox("📋 Work Interest", list(encoders.get('Work_Interest', {'Yes': 0, 'No': 1}).keys()))
-            social_weakness = st.selectbox("👥 Social Weakness", list(encoders.get('social_weakness', {'Yes': 0, 'No': 1}).keys()))
+            mood_swings = st.selectbox("😰 Mood Swings", get_encoder_classes(encoders, 'Mood_Swings', ['Low', 'Medium', 'High']))
+            coping_struggles = st.selectbox("💪 Coping Struggles", get_encoder_classes(encoders, 'Coping_Struggles', ['Yes', 'No']))
+            work_interest = st.selectbox("📋 Work Interest", get_encoder_classes(encoders, 'Work_Interest', ['Yes', 'No', 'Maybe']))
+            social_weakness = st.selectbox("👥 Social Weakness", get_encoder_classes(encoders, 'social_weakness', ['Yes', 'No', 'Maybe']))
         
         with col3:
-            family_history = st.selectbox("👨‍👩‍👧 Family History", list(encoders.get('family_history', {'Yes': 0, 'No': 1}).keys()))
-            treatment = st.selectbox("💊 Treatment", list(encoders.get('treatment', {'Yes': 0, 'No': 1}).keys()))
-            mental_health_history = st.selectbox("🧠 Mental Health History", list(encoders.get('mental_health_history', {'Yes': 0}).keys()))
-            changes_habits = st.selectbox("🔄 Changes in Habits", list(encoders.get('Changes_Habits', {'Yes': 0, 'No': 1}).keys()))
+            family_history = st.selectbox("👨‍👩‍👧 Family History", get_encoder_classes(encoders, 'family_history', ['Yes', 'No']))
+            treatment = st.selectbox("💊 Treatment", get_encoder_classes(encoders, 'treatment', ['Yes', 'No']))
+            mental_health_history = st.selectbox("🧠 Mental Health History", get_encoder_classes(encoders, 'mental_health_history', ['Yes', 'No', 'Maybe']))
+            changes_habits = st.selectbox("🔄 Changes in Habits", get_encoder_classes(encoders, 'Changes_Habits', ['Yes', 'No', 'Maybe']))
         
         st.markdown("---")
         
@@ -473,8 +506,16 @@ elif page == "🔮 Risk Prediction":
             input_df = pd.DataFrame([input_data])
             for col in input_df.columns:
                 if col in encoders:
+                    encoder = encoders[col]
                     try:
-                        input_df[col] = input_df[col].map(encoders[col])
+                        # Handle LabelEncoder objects
+                        if hasattr(encoder, 'transform'):
+                            input_df[col] = encoder.transform(input_df[col])
+                        # Handle dict mappings
+                        elif isinstance(encoder, dict):
+                            input_df[col] = input_df[col].map(encoder)
+                        else:
+                            input_df[col] = 0
                     except:
                         input_df[col] = 0
             
