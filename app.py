@@ -652,33 +652,243 @@ elif page == "🎯 Model Performance":
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Model Performance</h1>
-        <p>Comparing Machine Learning Model Metrics</p>
+        <p>Comprehensive Machine Learning Model Evaluation</p>
     </div>
     """, unsafe_allow_html=True)
     
     if model_results:
-        st.markdown('<div class="section-header"><h2>📊 Performance Comparison</h2></div>', unsafe_allow_html=True)
+        dt = model_results['Decision Tree']
+        nb = model_results['Naive Bayes']
+        
+        # ===== INNOVATIVE VIZ 1: Gauge Charts for Primary Metric (Recall) =====
+        st.markdown('<div class="section-header"><h2>🎯 Primary Metric: Recall (Catching At-Risk Individuals)</h2></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
+        
+        with col1:
+            # Decision Tree Gauge
+            fig_gauge_dt = go.Figure(go.Indicator(
+                mode="gauge+number+delta",
+                value=dt['Recall'] * 100,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "🌳 Decision Tree Recall", 'font': {'size': 18}},
+                delta={'reference': 70, 'increasing': {'color': "#38a169"}, 'suffix': '%'},
+                number={'suffix': '%', 'font': {'size': 40}},
+                gauge={
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#1e3a5f"},
+                    'bar': {'color': "#2d5a87"},
+                    'bgcolor': "white",
+                    'borderwidth': 2,
+                    'bordercolor': "#1e3a5f",
+                    'steps': [
+                        {'range': [0, 50], 'color': '#fed7d7'},
+                        {'range': [50, 70], 'color': '#feebc8'},
+                        {'range': [70, 85], 'color': '#c6f6d5'},
+                        {'range': [85, 100], 'color': '#9ae6b4'}
+                    ],
+                    'threshold': {
+                        'line': {'color': "#e53e3e", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                }
+            ))
+            fig_gauge_dt.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
+            st.plotly_chart(fig_gauge_dt, use_container_width=True)
+        
+        with col2:
+            # Naive Bayes Gauge
+            fig_gauge_nb = go.Figure(go.Indicator(
+                mode="gauge+number+delta",
+                value=nb['Recall'] * 100,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "📊 Naive Bayes Recall", 'font': {'size': 18}},
+                delta={'reference': 70, 'increasing': {'color': "#38a169"}, 'suffix': '%'},
+                number={'suffix': '%', 'font': {'size': 40}},
+                gauge={
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#1e3a5f"},
+                    'bar': {'color': "#38a169"},
+                    'bgcolor': "white",
+                    'borderwidth': 2,
+                    'bordercolor': "#1e3a5f",
+                    'steps': [
+                        {'range': [0, 50], 'color': '#fed7d7'},
+                        {'range': [50, 70], 'color': '#feebc8'},
+                        {'range': [70, 85], 'color': '#c6f6d5'},
+                        {'range': [85, 100], 'color': '#9ae6b4'}
+                    ],
+                    'threshold': {
+                        'line': {'color': "#e53e3e", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                }
+            ))
+            fig_gauge_nb.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
+            st.plotly_chart(fig_gauge_nb, use_container_width=True)
+        
+        st.markdown("""
+        <div class="info-card">
+            <p style="color: #6c757d; text-align: center;">
+                <strong>Recall Target: 70%+</strong> — The red threshold line shows our minimum acceptable recall. 
+                Higher recall means fewer at-risk individuals are missed.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ===== INNOVATIVE VIZ 2: Radar Chart Comparison =====
+        st.markdown('<div class="section-header"><h2>🕸️ Multi-Metric Radar Comparison</h2></div>', unsafe_allow_html=True)
+        
+        categories = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+        
+        fig_radar = go.Figure()
+        
+        fig_radar.add_trace(go.Scatterpolar(
+            r=[dt['Accuracy'], dt['Precision'], dt['Recall'], dt['F1'], dt['Accuracy']],
+            theta=categories + [categories[0]],
+            fill='toself',
+            fillcolor='rgba(45, 90, 135, 0.3)',
+            line=dict(color='#2d5a87', width=3),
+            name='Decision Tree 🌳'
+        ))
+        
+        fig_radar.add_trace(go.Scatterpolar(
+            r=[nb['Accuracy'], nb['Precision'], nb['Recall'], nb['F1'], nb['Accuracy']],
+            theta=categories + [categories[0]],
+            fill='toself',
+            fillcolor='rgba(56, 161, 105, 0.3)',
+            line=dict(color='#38a169', width=3),
+            name='Naive Bayes 📊'
+        ))
+        
+        fig_radar.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 1],
+                    tickformat='.0%'
+                )
+            ),
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+            height=450,
+            title=dict(text="<b>Model Performance Profile</b>", x=0.5, font_size=16)
+        )
+        st.plotly_chart(fig_radar, use_container_width=True)
+        
+        # ===== INNOVATIVE VIZ 3: Performance Cards with Visual Bars =====
+        st.markdown('<div class="section-header"><h2>📊 Detailed Metrics Breakdown</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
         with col1:
             st.markdown('<div class="metric-card" style="border-top: 4px solid #2d5a87;"><h3 style="color: #1e3a5f; text-align: center;">🌳 Decision Tree</h3></div>', unsafe_allow_html=True)
-            dt = model_results['Decision Tree']
-            c1, c2 = st.columns(2)
-            c1.metric("Accuracy", f"{dt['Accuracy']:.2%}")
-            c1.metric("Recall", f"{dt['Recall']:.2%}")
-            c2.metric("Precision", f"{dt['Precision']:.2%}")
-            c2.metric("F1 Score", f"{dt['F1']:.2%}")
+            
+            for metric, value in [('Accuracy', dt['Accuracy']), ('Precision', dt['Precision']), 
+                                   ('Recall', dt['Recall']), ('F1 Score', dt['F1'])]:
+                color = '#38a169' if value >= 0.7 else '#f6ad55' if value >= 0.5 else '#e53e3e'
+                st.markdown(f"""
+                <div style="margin: 0.5rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: #1e3a5f;">{metric}</span>
+                        <span style="font-weight: 700; color: {color};">{value:.1%}</span>
+                    </div>
+                    <div style="background: #e0e0e0; border-radius: 10px; height: 12px; overflow: hidden;">
+                        <div style="background: {color}; width: {value*100}%; height: 100%; border-radius: 10px; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         
         with col2:
             st.markdown('<div class="metric-card" style="border-top: 4px solid #38a169;"><h3 style="color: #1e3a5f; text-align: center;">📊 Naive Bayes</h3></div>', unsafe_allow_html=True)
-            nb = model_results['Naive Bayes']
-            c1, c2 = st.columns(2)
-            c1.metric("Accuracy", f"{nb['Accuracy']:.2%}")
-            c1.metric("Recall", f"{nb['Recall']:.2%}")
-            c2.metric("Precision", f"{nb['Precision']:.2%}")
-            c2.metric("F1 Score", f"{nb['F1']:.2%}")
+            
+            for metric, value in [('Accuracy', nb['Accuracy']), ('Precision', nb['Precision']), 
+                                   ('Recall', nb['Recall']), ('F1 Score', nb['F1'])]:
+                color = '#38a169' if value >= 0.7 else '#f6ad55' if value >= 0.5 else '#e53e3e'
+                st.markdown(f"""
+                <div style="margin: 0.5rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: #1e3a5f;">{metric}</span>
+                        <span style="font-weight: 700; color: {color};">{value:.1%}</span>
+                    </div>
+                    <div style="background: #e0e0e0; border-radius: 10px; height: 12px; overflow: hidden;">
+                        <div style="background: {color}; width: {value*100}%; height: 100%; border-radius: 10px; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         
-        st.markdown('<div class="section-header"><h2>📈 Visual Comparison</h2></div>', unsafe_allow_html=True)
+        # ===== INNOVATIVE VIZ 4: Confusion Matrix Heatmaps =====
+        st.markdown('<div class="section-header"><h2>🔢 Confusion Matrix Analysis</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        # Get confusion matrices from model_results
+        dt_cm = model_results['Decision Tree'].get('Confusion Matrix', [[0,0],[0,0]])
+        nb_cm = model_results['Naive Bayes'].get('Confusion Matrix', [[0,0],[0,0]])
+        
+        with col1:
+            if dt_cm and len(dt_cm) == 2:
+                fig_cm_dt = go.Figure(data=go.Heatmap(
+                    z=dt_cm,
+                    x=['Predicted: Not At Risk', 'Predicted: At Risk'],
+                    y=['Actual: Not At Risk', 'Actual: At Risk'],
+                    colorscale=[[0, '#e8f4fd'], [1, '#2d5a87']],
+                    showscale=False,
+                    text=[[f'{dt_cm[0][0]:,}', f'{dt_cm[0][1]:,}'],
+                          [f'{dt_cm[1][0]:,}', f'{dt_cm[1][1]:,}']],
+                    texttemplate='%{text}',
+                    textfont={'size': 18, 'color': 'white'},
+                    hovertemplate='Actual: %{y}<br>Predicted: %{x}<br>Count: %{z:,}<extra></extra>'
+                ))
+                fig_cm_dt.update_layout(
+                    title=dict(text="<b>🌳 Decision Tree</b>", x=0.5, font_size=14),
+                    height=300,
+                    xaxis=dict(side='bottom'),
+                    yaxis=dict(autorange='reversed')
+                )
+                st.plotly_chart(fig_cm_dt, use_container_width=True)
+        
+        with col2:
+            if nb_cm and len(nb_cm) == 2:
+                fig_cm_nb = go.Figure(data=go.Heatmap(
+                    z=nb_cm,
+                    x=['Predicted: Not At Risk', 'Predicted: At Risk'],
+                    y=['Actual: Not At Risk', 'Actual: At Risk'],
+                    colorscale=[[0, '#f0fff4'], [1, '#38a169']],
+                    showscale=False,
+                    text=[[f'{nb_cm[0][0]:,}', f'{nb_cm[0][1]:,}'],
+                          [f'{nb_cm[1][0]:,}', f'{nb_cm[1][1]:,}']],
+                    texttemplate='%{text}',
+                    textfont={'size': 18, 'color': 'white'},
+                    hovertemplate='Actual: %{y}<br>Predicted: %{x}<br>Count: %{z:,}<extra></extra>'
+                ))
+                fig_cm_nb.update_layout(
+                    title=dict(text="<b>📊 Naive Bayes</b>", x=0.5, font_size=14),
+                    height=300,
+                    xaxis=dict(side='bottom'),
+                    yaxis=dict(autorange='reversed')
+                )
+                st.plotly_chart(fig_cm_nb, use_container_width=True)
+        
+        # Confusion matrix interpretation
+        st.markdown("""
+        <div class="info-card">
+            <h4 style="color: #1e3a5f; margin-top: 0;">📖 How to Read the Confusion Matrix</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; color: #6c757d;">
+                <div>
+                    <p><strong>Top-Left (True Negative):</strong> Correctly identified as Not At Risk ✅</p>
+                    <p><strong>Top-Right (False Positive):</strong> Incorrectly flagged as At Risk ⚡</p>
+                </div>
+                <div>
+                    <p><strong>Bottom-Left (False Negative):</strong> Missed At-Risk individuals ❌</p>
+                    <p><strong>Bottom-Right (True Positive):</strong> Correctly identified as At Risk ✅</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ===== INNOVATIVE VIZ 5: Model Comparison Bar Race =====
+        st.markdown('<div class="section-header"><h2>🏆 Head-to-Head Comparison</h2></div>', unsafe_allow_html=True)
         
         metrics_df = pd.DataFrame({
             'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
@@ -687,12 +897,42 @@ elif page == "🎯 Model Performance":
         })
         
         fig = go.Figure()
-        fig.add_trace(go.Bar(name='Decision Tree', x=metrics_df['Metric'], y=metrics_df['Decision Tree'],
-                            marker_color='#2d5a87', text=[f'{v:.2%}' for v in metrics_df['Decision Tree']], textposition='outside'))
-        fig.add_trace(go.Bar(name='Naive Bayes', x=metrics_df['Metric'], y=metrics_df['Naive Bayes'],
-                            marker_color='#38a169', text=[f'{v:.2%}' for v in metrics_df['Naive Bayes']], textposition='outside'))
-        fig.update_layout(barmode='group', title='Model Comparison', yaxis=dict(range=[0, 1.1], tickformat='.0%'), height=450)
+        fig.add_trace(go.Bar(
+            name='Decision Tree 🌳', 
+            x=metrics_df['Metric'], 
+            y=metrics_df['Decision Tree'],
+            marker_color='#2d5a87', 
+            text=[f'{v:.1%}' for v in metrics_df['Decision Tree']], 
+            textposition='outside',
+            textfont=dict(size=14, color='#2d5a87')
+        ))
+        fig.add_trace(go.Bar(
+            name='Naive Bayes 📊', 
+            x=metrics_df['Metric'], 
+            y=metrics_df['Naive Bayes'],
+            marker_color='#38a169', 
+            text=[f'{v:.1%}' for v in metrics_df['Naive Bayes']], 
+            textposition='outside',
+            textfont=dict(size=14, color='#38a169')
+        ))
+        fig.update_layout(
+            barmode='group', 
+            title=dict(text='<b>All Metrics Comparison</b>', x=0.5, font_size=16),
+            yaxis=dict(range=[0, 1.15], tickformat='.0%', title='Score'),
+            xaxis=dict(title=''),
+            height=400,
+            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
+        )
         st.plotly_chart(fig, use_container_width=True)
+        
+        # Winner announcement
+        best = model_results.get('best_model', 'Decision Tree')
+        st.markdown(f"""
+        <div style="background: linear-gradient(145deg, #f0fff4 0%, #c6f6d5 100%); border-radius: 16px; padding: 1.5rem; border: 2px solid #38a169; text-align: center; margin-top: 1rem;">
+            <h2 style="color: #276749; margin: 0;">🏆 Best Model: {best}</h2>
+            <p style="color: #276749; margin-top: 0.5rem;">Selected based on highest Recall score for mental health screening</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # RISK PREDICTION PAGE
@@ -758,18 +998,20 @@ elif page == "🔮 Risk Prediction":
             occupation = st.selectbox("💼 Occupation", get_encoder_classes(encoders, 'Occupation', ['Student', 'Corporate', 'Business', 'Housewife', 'Others']))
             self_employed = st.selectbox("🏢 Self Employed", get_encoder_classes(encoders, 'self_employed', ['Yes', 'No']))
             days_indoors = st.selectbox("🏠 Days Indoors", get_encoder_classes(encoders, 'Days_Indoors', ['Go out Every day', '1-14 days', '15-30 days', '31-60 days', 'More than 2 months']))
+            care_options = st.selectbox("🏥 Care Options Awareness", get_encoder_classes(encoders, 'care_options', ['Yes', 'No', 'Not sure']))
         
         with col2:
             mood_swings = st.selectbox("😰 Mood Swings", get_encoder_classes(encoders, 'Mood_Swings', ['Low', 'Medium', 'High']))
             coping_struggles = st.selectbox("💪 Coping Struggles", get_encoder_classes(encoders, 'Coping_Struggles', ['Yes', 'No']))
             work_interest = st.selectbox("📋 Work Interest", get_encoder_classes(encoders, 'Work_Interest', ['Yes', 'No', 'Maybe']))
-            social_weakness = st.selectbox("👥 Social Weakness", get_encoder_classes(encoders, 'social_weakness', ['Yes', 'No', 'Maybe']))
+            social_weakness = st.selectbox("👥 Social Weakness", get_encoder_classes(encoders, 'Social_Weakness', ['Yes', 'No', 'Maybe']))
         
         with col3:
             family_history = st.selectbox("👨‍👩‍👧 Family History", get_encoder_classes(encoders, 'family_history', ['Yes', 'No']))
             treatment = st.selectbox("💊 Treatment", get_encoder_classes(encoders, 'treatment', ['Yes', 'No']))
-            mental_health_history = st.selectbox("🧠 Mental Health History", get_encoder_classes(encoders, 'mental_health_history', ['Yes', 'No', 'Maybe']))
+            mental_health_history = st.selectbox("🧠 Mental Health History", get_encoder_classes(encoders, 'Mental_Health_History', ['Yes', 'No', 'Maybe']))
             changes_habits = st.selectbox("🔄 Changes in Habits", get_encoder_classes(encoders, 'Changes_Habits', ['Yes', 'No', 'Maybe']))
+            mental_health_interview = st.selectbox("🗣️ Discuss in Interview", get_encoder_classes(encoders, 'mental_health_interview', ['Yes', 'No', 'Maybe']))
         
         st.markdown("---")
         
@@ -778,11 +1020,22 @@ elif page == "🔮 Risk Prediction":
             predict_button = st.button("🔮 Analyze Risk", use_container_width=True)
         
         if predict_button:
+            # Map inputs to correct feature column names
             input_data = {
-                'Gender': gender, 'Occupation': occupation, 'self_employed': self_employed,
-                'Days_Indoors': days_indoors, 'Mood_Swings': mood_swings, 'Coping_Struggles': coping_struggles,
-                'Work_Interest': work_interest, 'social_weakness': social_weakness, 'family_history': family_history,
-                'treatment': treatment, 'mental_health_history': mental_health_history, 'Changes_Habits': changes_habits
+                'Gender': gender, 
+                'Occupation': occupation, 
+                'self_employed': self_employed,
+                'family_history': family_history,
+                'treatment': treatment,
+                'Days_Indoors': days_indoors, 
+                'Changes_Habits': changes_habits,
+                'Mental_Health_History': mental_health_history,
+                'Mood_Swings': mood_swings, 
+                'Coping_Struggles': coping_struggles,
+                'Work_Interest': work_interest, 
+                'Social_Weakness': social_weakness,
+                'mental_health_interview': mental_health_interview,
+                'care_options': care_options
             }
             
             input_df = pd.DataFrame([input_data])
