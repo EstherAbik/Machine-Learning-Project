@@ -322,85 +322,329 @@ elif page == "📊 EDA & Insights":
     st.markdown("""
     <div class="main-header">
         <h1>📊 Exploratory Data Analysis</h1>
-        <p>Understanding Patterns in Mental Health Data</p>
+        <p>Discovering Hidden Patterns in Mental Health Data</p>
     </div>
     """, unsafe_allow_html=True)
     
     if df is not None:
-        st.markdown('<div class="section-header"><h2>📋 Dataset Overview</h2></div>', unsafe_allow_html=True)
+        # Create Stress_Risk if not exists
+        if 'Stress_Risk' not in df.columns and 'Growing_Stress' in df.columns:
+            df['Stress_Risk'] = df['Growing_Stress'].apply(
+                lambda x: 'At Risk' if x in ['Yes', 'Maybe'] else 'Not At Risk'
+            )
         
-        col1, col2, col3 = st.columns(3)
+        # Dataset Overview with Key Stats
+        st.markdown('<div class="section-header"><h2>📋 Dataset at a Glance</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
-            st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df):,}</div><div class="metric-label">Records</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df):,}</div><div class="metric-label">Total Records</div></div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df.columns)}</div><div class="metric-label">Features</div></div>', unsafe_allow_html=True)
         with col3:
-            st.markdown(f'<div class="metric-card"><div class="metric-value">{df.isnull().sum().sum()}</div><div class="metric-label">Missing</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-card"><div class="metric-value">{df.isnull().sum().sum()}</div><div class="metric-label">Missing Values</div></div>', unsafe_allow_html=True)
+        with col4:
+            if 'Stress_Risk' in df.columns:
+                at_risk_pct = (df['Stress_Risk'] == 'At Risk').mean() * 100
+                st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #e53e3e;">{at_risk_pct:.1f}%</div><div class="metric-label">At Risk</div></div>', unsafe_allow_html=True)
+        with col5:
+            if 'Stress_Risk' in df.columns:
+                not_risk_pct = (df['Stress_Risk'] == 'Not At Risk').mean() * 100
+                st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #38a169;">{not_risk_pct:.1f}%</div><div class="metric-label">Not At Risk</div></div>', unsafe_allow_html=True)
         
-        st.markdown('<div class="section-header"><h2>📈 Visualizations</h2></div>', unsafe_allow_html=True)
+        # ===== KEY INSIGHT 1: Target Distribution =====
+        st.markdown('<div class="section-header"><h2>🎯 Target Variable: Who is At Risk?</h2></div>', unsafe_allow_html=True)
         
-        tab1, tab2, tab3 = st.tabs(["🎯 Target", "😰 Mood & Stress", "👥 Social Factors"])
+        col1, col2 = st.columns([1, 1])
         
-        with tab1:
-            if 'Stress_Risk' not in df.columns and 'Growing_Stress' in df.columns:
-                df['Stress_Risk'] = df['Growing_Stress'].map({'Yes': 'At Risk', 'No': 'Not At Risk'})
-            
+        with col1:
             if 'Stress_Risk' in df.columns:
                 risk_counts = df['Stress_Risk'].value_counts()
+                colors = {'At Risk': '#e53e3e', 'Not At Risk': '#38a169'}
+                
                 fig = go.Figure(data=[go.Pie(
-                    labels=risk_counts.index, values=risk_counts.values,
-                    hole=0.6, marker_colors=['#e53e3e', '#38a169'],
-                    textinfo='percent+label'
+                    labels=risk_counts.index, 
+                    values=risk_counts.values,
+                    hole=0.65,
+                    marker_colors=[colors.get(x, '#999') for x in risk_counts.index],
+                    textinfo='percent',
+                    textfont_size=18,
+                    textfont_color='white',
+                    hovertemplate='<b>%{label}</b><br>Count: %{value:,}<br>Percentage: %{percent}<extra></extra>'
                 )])
-                fig.update_layout(title="Stress Risk Distribution", height=400,
-                                  annotations=[dict(text='Risk', x=0.5, y=0.5, font_size=16, showarrow=False)])
+                fig.add_annotation(text=f"<b>{len(df):,}</b><br>Total", x=0.5, y=0.5, font_size=16, showarrow=False)
+                fig.update_layout(
+                    title=dict(text="<b>Stress Risk Distribution</b>", x=0.5, font_size=16),
+                    height=350,
+                    showlegend=True,
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5)
+                )
                 st.plotly_chart(fig, use_container_width=True)
         
-        with tab2:
-            col1, col2 = st.columns(2)
-            with col1:
-                if 'Mood_Swings' in df.columns and 'Stress_Risk' in df.columns:
-                    cross_tab = pd.crosstab(df['Mood_Swings'], df['Stress_Risk'], normalize='index') * 100
+        with col2:
+            st.markdown("""
+            <div class="info-card">
+                <h4 style="color: #1e3a5f; margin-top: 0;">💡 Key Insight: Class Imbalance</h4>
+                <p style="color: #6c757d;">
+                    The dataset shows an <strong>imbalanced distribution</strong> between risk categories.
+                    This is common in mental health data where "at risk" cases are often the minority.
+                </p>
+                <p style="color: #6c757d;">
+                    <strong>Our approach:</strong><br>
+                    • Decision Tree: <code>class_weight='balanced'</code><br>
+                    • Naive Bayes: <code>SMOTE</code> oversampling<br>
+                    • Primary metric: <strong>Recall</strong> (catch all at-risk individuals)
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # ===== KEY INSIGHT 2: Risk Factors Analysis =====
+        st.markdown('<div class="section-header"><h2>🔍 What Factors Increase Stress Risk?</h2></div>', unsafe_allow_html=True)
+        
+        # Calculate risk percentages for each factor
+        risk_factors = {}
+        factor_cols = ['Mood_Swings', 'Coping_Struggles', 'social_weakness', 'Social_Weakness', 
+                       'family_history', 'mental_health_history', 'Changes_Habits', 'Work_Interest']
+        
+        for col in factor_cols:
+            if col in df.columns and 'Stress_Risk' in df.columns:
+                cross = pd.crosstab(df[col], df['Stress_Risk'], normalize='index') * 100
+                if 'At Risk' in cross.columns:
+                    for idx in cross.index:
+                        key = f"{col}: {idx}"
+                        risk_factors[key] = cross.loc[idx, 'At Risk']
+        
+        # Sort and get top risk factors
+        if risk_factors:
+            sorted_factors = sorted(risk_factors.items(), key=lambda x: x[1], reverse=True)[:10]
+            
+            factor_names = [f[0] for f in sorted_factors]
+            risk_values = [f[1] for f in sorted_factors]
+            
+            # Create gradient colors based on risk level
+            colors = [f'rgb({min(255, int(150 + v*1.5))}, {max(0, int(180 - v*2))}, {max(0, int(100 - v))})' for v in risk_values]
+            
+            fig = go.Figure(go.Bar(
+                x=risk_values,
+                y=factor_names,
+                orientation='h',
+                marker=dict(
+                    color=risk_values,
+                    colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']],
+                    showscale=True,
+                    colorbar=dict(title="Risk %", ticksuffix="%")
+                ),
+                text=[f'{v:.1f}%' for v in risk_values],
+                textposition='outside',
+                hovertemplate='<b>%{y}</b><br>At Risk: %{x:.1f}%<extra></extra>'
+            ))
+            fig.update_layout(
+                title=dict(text="<b>🔥 Top Risk Factors (Higher % = More At Risk)</b>", font_size=16),
+                xaxis=dict(title="Percentage At Risk (%)", range=[0, max(risk_values) + 10]),
+                yaxis=dict(title="", autorange="reversed"),
+                height=450,
+                margin=dict(l=200)
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Insight box
+            top_factor = sorted_factors[0][0]
+            top_risk = sorted_factors[0][1]
+            st.markdown(f"""
+            <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1rem; border-left: 4px solid #e53e3e; margin: 1rem 0;">
+                <h4 style="color: #c53030; margin-top: 0;">📌 Critical Finding</h4>
+                <p style="color: #c53030;">
+                    <strong>{top_factor}</strong> shows the highest risk at <strong>{top_risk:.1f}%</strong>. 
+                    This factor should be prioritized in mental health screening.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # ===== KEY INSIGHT 3: Mood Swings Trend =====
+        st.markdown('<div class="section-header"><h2>🎭 Mood Swings: A Clear Pattern Emerges</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            if 'Mood_Swings' in df.columns and 'Stress_Risk' in df.columns:
+                order = ['Low', 'Medium', 'High']
+                mood_risk = pd.crosstab(df['Mood_Swings'], df['Stress_Risk'], normalize='index') * 100
+                mood_risk = mood_risk.reindex([o for o in order if o in mood_risk.index])
+                
+                if 'At Risk' in mood_risk.columns:
                     fig = go.Figure()
-                    for col in cross_tab.columns:
-                        color = '#e53e3e' if col == 'At Risk' else '#38a169'
-                        fig.add_trace(go.Bar(name=col, x=cross_tab.index, y=cross_tab[col], marker_color=color,
-                                           text=[f'{v:.1f}%' for v in cross_tab[col]], textposition='inside'))
-                    fig.update_layout(title="Mood Swings vs Stress Risk", barmode='stack', height=350, yaxis=dict(range=[0,100]))
-                    st.plotly_chart(fig, use_container_width=True)
-            with col2:
-                if 'Coping_Struggles' in df.columns and 'Stress_Risk' in df.columns:
-                    cross_tab = pd.crosstab(df['Coping_Struggles'], df['Stress_Risk'], normalize='index') * 100
-                    fig = go.Figure()
-                    for col in cross_tab.columns:
-                        color = '#e53e3e' if col == 'At Risk' else '#38a169'
-                        fig.add_trace(go.Bar(name=col, x=cross_tab.index, y=cross_tab[col], marker_color=color,
-                                           text=[f'{v:.1f}%' for v in cross_tab[col]], textposition='inside'))
-                    fig.update_layout(title="Coping Struggles vs Stress Risk", barmode='stack', height=350, showlegend=False, yaxis=dict(range=[0,100]))
+                    
+                    # Area chart showing risk trend
+                    fig.add_trace(go.Scatter(
+                        x=mood_risk.index, y=mood_risk['At Risk'],
+                        fill='tozeroy', mode='lines+markers+text',
+                        marker=dict(size=15, color='#e53e3e'),
+                        line=dict(width=3, color='#e53e3e'),
+                        text=[f'{v:.1f}%' for v in mood_risk['At Risk']],
+                        textposition='top center',
+                        textfont=dict(size=14, color='#e53e3e'),
+                        fillcolor='rgba(229, 62, 62, 0.2)',
+                        name='At Risk %'
+                    ))
+                    
+                    # Add arrow annotation
+                    if len(mood_risk) >= 2:
+                        increase = mood_risk['At Risk'].iloc[-1] - mood_risk['At Risk'].iloc[0]
+                        fig.add_annotation(
+                            x=mood_risk.index[-1], y=mood_risk['At Risk'].iloc[-1] + 5,
+                            text=f"📈 +{increase:.1f}%",
+                            showarrow=False, font=dict(size=14, color='#e53e3e')
+                        )
+                    
+                    fig.update_layout(
+                        title=dict(text="<b>Risk Increases with Mood Swings Severity</b>", font_size=16),
+                        xaxis=dict(title="Mood Swings Level"),
+                        yaxis=dict(title="At Risk (%)", range=[0, 100]),
+                        height=350,
+                        showlegend=False
+                    )
                     st.plotly_chart(fig, use_container_width=True)
         
-        with tab3:
-            col1, col2 = st.columns(2)
-            with col1:
-                if 'social_weakness' in df.columns and 'Stress_Risk' in df.columns:
-                    cross_tab = pd.crosstab(df['social_weakness'], df['Stress_Risk'], normalize='index') * 100
-                    fig = go.Figure()
-                    for col in cross_tab.columns:
-                        color = '#e53e3e' if col == 'At Risk' else '#38a169'
-                        fig.add_trace(go.Bar(name=col, x=cross_tab.index, y=cross_tab[col], marker_color=color,
-                                           text=[f'{v:.1f}%' for v in cross_tab[col]], textposition='inside'))
-                    fig.update_layout(title="Social Weakness vs Stress Risk", barmode='stack', height=350, yaxis=dict(range=[0,100]))
-                    st.plotly_chart(fig, use_container_width=True)
-            with col2:
-                if 'family_history' in df.columns and 'Stress_Risk' in df.columns:
-                    cross_tab = pd.crosstab(df['family_history'], df['Stress_Risk'], normalize='index') * 100
-                    fig = go.Figure()
-                    for col in cross_tab.columns:
-                        color = '#e53e3e' if col == 'At Risk' else '#38a169'
-                        fig.add_trace(go.Bar(name=col, x=cross_tab.index, y=cross_tab[col], marker_color=color,
-                                           text=[f'{v:.1f}%' for v in cross_tab[col]], textposition='inside'))
-                    fig.update_layout(title="Family History vs Stress Risk", barmode='stack', height=350, showlegend=False, yaxis=dict(range=[0,100]))
-                    st.plotly_chart(fig, use_container_width=True)
+        with col2:
+            st.markdown("""
+            <div class="info-card">
+                <h4 style="color: #1e3a5f; margin-top: 0;">📈 Trend Analysis</h4>
+                <p style="color: #6c757d;">
+                    There's a <strong>clear upward trend</strong>: as mood swings intensity increases, 
+                    so does the likelihood of being at risk for stress.
+                </p>
+                <p style="color: #6c757d;">
+                    <strong>Implication:</strong> Mood regulation support could be a key intervention point.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # ===== KEY INSIGHT 4: Days Indoors Impact =====
+        st.markdown('<div class="section-header"><h2>🏠 Time Indoors: Isolation & Stress</h2></div>', unsafe_allow_html=True)
+        
+        if 'Days_Indoors' in df.columns and 'Stress_Risk' in df.columns:
+            order = ['Go out Every day', '1-14 days', '15-30 days', '31-60 days', 'More than 2 months']
+            indoor_risk = pd.crosstab(df['Days_Indoors'], df['Stress_Risk'], normalize='index') * 100
+            indoor_risk = indoor_risk.reindex([o for o in order if o in indoor_risk.index])
+            
+            if 'At Risk' in indoor_risk.columns and len(indoor_risk) > 0:
+                fig = go.Figure()
+                
+                # Gradient bar chart
+                fig.add_trace(go.Bar(
+                    x=indoor_risk.index,
+                    y=indoor_risk['At Risk'],
+                    marker=dict(
+                        color=indoor_risk['At Risk'],
+                        colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']]
+                    ),
+                    text=[f'{v:.1f}%' for v in indoor_risk['At Risk']],
+                    textposition='outside',
+                    textfont=dict(size=12),
+                    hovertemplate='<b>%{x}</b><br>At Risk: %{y:.1f}%<extra></extra>'
+                ))
+                
+                # Add trend line
+                x_numeric = list(range(len(indoor_risk)))
+                fig.add_trace(go.Scatter(
+                    x=indoor_risk.index, y=indoor_risk['At Risk'],
+                    mode='lines+markers',
+                    line=dict(dash='dot', width=2, color='#1e3a5f'),
+                    marker=dict(size=8, color='#1e3a5f'),
+                    name='Trend',
+                    showlegend=False
+                ))
+                
+                fig.update_layout(
+                    title=dict(text="<b>📈 More Time Indoors = Higher Stress Risk</b>", font_size=16),
+                    xaxis=dict(title="Days Spent Indoors", tickangle=-15),
+                    yaxis=dict(title="At Risk (%)", range=[0, max(indoor_risk['At Risk']) + 15]),
+                    height=400,
+                    showlegend=False
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Calculate and display the increase
+                if len(indoor_risk) >= 2:
+                    first_val = indoor_risk['At Risk'].iloc[0]
+                    last_val = indoor_risk['At Risk'].iloc[-1]
+                    increase = last_val - first_val
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #38a169;"><div class="metric-value" style="color: #38a169;">{first_val:.1f}%</div><div class="metric-label">Daily Outings (Baseline)</div></div>', unsafe_allow_html=True)
+                    with col2:
+                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #e53e3e;"><div class="metric-value" style="color: #e53e3e;">{last_val:.1f}%</div><div class="metric-label">2+ Months Indoors</div></div>', unsafe_allow_html=True)
+                    with col3:
+                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #f6ad55;"><div class="metric-value" style="color: #f6ad55;">+{increase:.1f}%</div><div class="metric-label">Risk Increase</div></div>', unsafe_allow_html=True)
+        
+        # ===== KEY INSIGHT 5: Comparative Analysis =====
+        st.markdown('<div class="section-header"><h2>⚖️ Comparative Risk Analysis</h2></div>', unsafe_allow_html=True)
+        
+        # Create side-by-side comparisons
+        compare_cols = [
+            ('family_history', 'Family History', 'Yes', 'No'),
+            ('Coping_Struggles', 'Coping Struggles', 'Yes', 'No'),
+            ('treatment', 'Treatment', 'Yes', 'No')
+        ]
+        
+        cols = st.columns(3)
+        for i, (col_name, display_name, yes_val, no_val) in enumerate(compare_cols):
+            if col_name in df.columns and 'Stress_Risk' in df.columns:
+                cross = pd.crosstab(df[col_name], df['Stress_Risk'], normalize='index') * 100
+                
+                if 'At Risk' in cross.columns:
+                    with cols[i]:
+                        yes_risk = cross.loc[yes_val, 'At Risk'] if yes_val in cross.index else 0
+                        no_risk = cross.loc[no_val, 'At Risk'] if no_val in cross.index else 0
+                        diff = yes_risk - no_risk
+                        
+                        fig = go.Figure()
+                        fig.add_trace(go.Bar(
+                            x=[f'No {display_name}', f'Has {display_name}'],
+                            y=[no_risk, yes_risk],
+                            marker_color=['#38a169', '#e53e3e'],
+                            text=[f'{no_risk:.1f}%', f'{yes_risk:.1f}%'],
+                            textposition='outside'
+                        ))
+                        fig.update_layout(
+                            title=dict(text=f"<b>{display_name}</b>", font_size=14),
+                            yaxis=dict(range=[0, max(yes_risk, no_risk) + 15], title="At Risk %"),
+                            height=300,
+                            margin=dict(t=50, b=30)
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        if diff > 0:
+                            st.markdown(f"<p style='text-align: center; color: #e53e3e;'><strong>+{diff:.1f}%</strong> higher risk</p>", unsafe_allow_html=True)
+        
+        # ===== EDA Summary =====
+        st.markdown('<div class="section-header"><h2>📝 EDA Key Takeaways</h2></div>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="info-card">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div>
+                    <h4 style="color: #e53e3e; margin-top: 0;">🔴 High Risk Indicators</h4>
+                    <ul style="color: #6c757d;">
+                        <li>High mood swings severity</li>
+                        <li>Extended time indoors (2+ months)</li>
+                        <li>Coping difficulties</li>
+                        <li>Family history of mental health issues</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #38a169; margin-top: 0;">🟢 Protective Factors</h4>
+                    <ul style="color: #6c757d;">
+                        <li>Daily outdoor activities</li>
+                        <li>Low mood swing frequency</li>
+                        <li>Strong coping mechanisms</li>
+                        <li>No family history</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # MODEL PERFORMANCE PAGE
@@ -461,11 +705,49 @@ elif page == "🔮 Risk Prediction":
     """, unsafe_allow_html=True)
     
     if dt_model and nb_model and encoders and feature_columns:
-        st.markdown("""
-        <div class="info-card">
-            <p><strong>How it works:</strong> Enter characteristics below for instant stress risk assessment.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Model Selection Section
+        st.markdown('<div class="section-header"><h2>🤖 Select Prediction Model</h2></div>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            model_choice = st.radio(
+                "Choose which model to use for prediction:",
+                ["🌳 Decision Tree", "📊 Naive Bayes", "🔄 Both Models (Compare)"],
+                horizontal=True,
+                index=2  # Default to "Both Models"
+            )
+        
+        # Model info based on selection
+        if model_choice == "🌳 Decision Tree":
+            st.markdown("""
+            <div class="info-card" style="border-left: 4px solid #2d5a87;">
+                <h4 style="color: #2d5a87; margin-top: 0;">🌳 Decision Tree Selected</h4>
+                <p style="color: #6c757d;">
+                    Rule-based classifier that creates interpretable decision rules.
+                    Uses <code>class_weight='balanced'</code> to handle class imbalance.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        elif model_choice == "📊 Naive Bayes":
+            st.markdown("""
+            <div class="info-card" style="border-left: 4px solid #38a169;">
+                <h4 style="color: #38a169; margin-top: 0;">📊 Naive Bayes Selected</h4>
+                <p style="color: #6c757d;">
+                    Probabilistic classifier using Bayes' theorem.
+                    Uses <code>SMOTE</code> oversampling to handle class imbalance.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="info-card">
+                <h4 style="color: #1e3a5f; margin-top: 0;">🔄 Comparing Both Models</h4>
+                <p style="color: #6c757d;">
+                    You'll see predictions from both Decision Tree and Naive Bayes models side by side.
+                    This helps validate the prediction with multiple approaches.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown('<div class="section-header"><h2>📝 Enter Information</h2></div>', unsafe_allow_html=True)
         
@@ -533,26 +815,62 @@ elif page == "🔮 Risk Prediction":
             dt_label = "At Risk" if dt_pred == 1 else "Not At Risk"
             nb_label = "At Risk" if nb_pred == 1 else "Not At Risk"
             
-            st.markdown('<div class="section-header"><h2>📊 Results</h2></div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><h2>📊 Prediction Results</h2></div>', unsafe_allow_html=True)
             
-            col1, col2 = st.columns(2)
-            with col1:
+            # Display based on model choice
+            if model_choice == "🌳 Decision Tree":
+                # Show only Decision Tree result
                 css_class = "prediction-at-risk" if dt_label == "At Risk" else "prediction-not-at-risk"
                 icon = "⚠️" if dt_label == "At Risk" else "✅"
                 color = "#e53e3e" if dt_label == "At Risk" else "#38a169"
-                st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">🌳 Decision Tree</h3><div style="font-size: 3rem;">{icon}</div><h2 style="color: {color};">{dt_label}</h2></div>', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">🌳 Decision Tree Prediction</h3><div style="font-size: 4rem;">{icon}</div><h1 style="color: {color};">{dt_label}</h1></div>', unsafe_allow_html=True)
+                
+                if dt_label == "At Risk":
+                    st.markdown('<div style="background: #fff5f5; padding: 1.5rem; border-radius: 12px; border: 2px solid #e53e3e; text-align: center; margin-top: 1rem;"><h3 style="color: #e53e3e;">⚠️ At Risk Detected</h3><p>Consider consulting a mental health professional for support.</p></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div style="background: #f0fff4; padding: 1.5rem; border-radius: 12px; border: 2px solid #38a169; text-align: center; margin-top: 1rem;"><h3 style="color: #38a169;">✅ Not At Risk</h3><p>Keep maintaining your mental wellness practices!</p></div>', unsafe_allow_html=True)
             
-            with col2:
+            elif model_choice == "📊 Naive Bayes":
+                # Show only Naive Bayes result
                 css_class = "prediction-at-risk" if nb_label == "At Risk" else "prediction-not-at-risk"
                 icon = "⚠️" if nb_label == "At Risk" else "✅"
                 color = "#e53e3e" if nb_label == "At Risk" else "#38a169"
-                st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">📊 Naive Bayes</h3><div style="font-size: 3rem;">{icon}</div><h2 style="color: {color};">{nb_label}</h2></div>', unsafe_allow_html=True)
-            
-            if dt_label == nb_label:
-                if dt_label == "At Risk":
-                    st.markdown('<div style="background: #fff5f5; padding: 1.5rem; border-radius: 12px; border: 2px solid #e53e3e; text-align: center; margin-top: 1rem;"><h3 style="color: #e53e3e;">⚠️ Both Models: At Risk</h3><p>Consider consulting a mental health professional.</p></div>', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">📊 Naive Bayes Prediction</h3><div style="font-size: 4rem;">{icon}</div><h1 style="color: {color};">{nb_label}</h1></div>', unsafe_allow_html=True)
+                
+                if nb_label == "At Risk":
+                    st.markdown('<div style="background: #fff5f5; padding: 1.5rem; border-radius: 12px; border: 2px solid #e53e3e; text-align: center; margin-top: 1rem;"><h3 style="color: #e53e3e;">⚠️ At Risk Detected</h3><p>Consider consulting a mental health professional for support.</p></div>', unsafe_allow_html=True)
                 else:
-                    st.markdown('<div style="background: #f0fff4; padding: 1.5rem; border-radius: 12px; border: 2px solid #38a169; text-align: center; margin-top: 1rem;"><h3 style="color: #38a169;">✅ Both Models: Not At Risk</h3><p>Keep maintaining your mental wellness!</p></div>', unsafe_allow_html=True)
+                    st.markdown('<div style="background: #f0fff4; padding: 1.5rem; border-radius: 12px; border: 2px solid #38a169; text-align: center; margin-top: 1rem;"><h3 style="color: #38a169;">✅ Not At Risk</h3><p>Keep maintaining your mental wellness practices!</p></div>', unsafe_allow_html=True)
+            
+            else:
+                # Show both models side by side
+                col1, col2 = st.columns(2)
+                with col1:
+                    css_class = "prediction-at-risk" if dt_label == "At Risk" else "prediction-not-at-risk"
+                    icon = "⚠️" if dt_label == "At Risk" else "✅"
+                    color = "#e53e3e" if dt_label == "At Risk" else "#38a169"
+                    st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">🌳 Decision Tree</h3><div style="font-size: 3rem;">{icon}</div><h2 style="color: {color};">{dt_label}</h2></div>', unsafe_allow_html=True)
+                
+                with col2:
+                    css_class = "prediction-at-risk" if nb_label == "At Risk" else "prediction-not-at-risk"
+                    icon = "⚠️" if nb_label == "At Risk" else "✅"
+                    color = "#e53e3e" if nb_label == "At Risk" else "#38a169"
+                    st.markdown(f'<div class="{css_class}"><h3 style="color: {color};">📊 Naive Bayes</h3><div style="font-size: 3rem;">{icon}</div><h2 style="color: {color};">{nb_label}</h2></div>', unsafe_allow_html=True)
+                
+                # Consensus message
+                if dt_label == nb_label:
+                    if dt_label == "At Risk":
+                        st.markdown('<div style="background: #fff5f5; padding: 1.5rem; border-radius: 12px; border: 2px solid #e53e3e; text-align: center; margin-top: 1rem;"><h3 style="color: #e53e3e;">⚠️ Both Models Agree: At Risk</h3><p>Both algorithms identify potential risk. Consider consulting a mental health professional.</p></div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<div style="background: #f0fff4; padding: 1.5rem; border-radius: 12px; border: 2px solid #38a169; text-align: center; margin-top: 1rem;"><h3 style="color: #38a169;">✅ Both Models Agree: Not At Risk</h3><p>Both algorithms indicate low risk. Keep maintaining your mental wellness!</p></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div style="background: #fffbeb; padding: 1.5rem; border-radius: 12px; border: 2px solid #f6ad55; text-align: center; margin-top: 1rem;"><h3 style="color: #c05621;">⚡ Models Disagree</h3><p>The models give different predictions. Consider the more cautious approach and monitor your mental health.</p></div>', unsafe_allow_html=True)
         
         st.markdown("""
         <div class="info-card" style="margin-top: 2rem;">
