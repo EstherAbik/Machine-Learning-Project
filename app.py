@@ -213,7 +213,7 @@ with st.sidebar:
     
     page = st.radio(
         "Navigation",
-        ["🏠 Problem Statement", "📊 EDA & Insights", "🔧 Methodology", "🎯 Model Performance", "🔮 Risk Prediction"],
+        ["Problem Statement", "EDA & Insights", "Methodology", "Model Performance", "Risk Prediction"],
         label_visibility="collapsed"
     )
 
@@ -235,14 +235,14 @@ if page == "🏠 Problem Statement":
     """, unsafe_allow_html=True)
     
     # Problem Definition
-    st.markdown('<div class="section-header"><h2>📌 Problem Definition</h2></div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"><h2> Problem Definition</h2></div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
         <div class="info-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">🎯 Classification Problem</h4>
+            <h4 style="color: #1e3a5f; margin-top: 0;"> Classification Problem</h4>
             <p>
                 <strong>Goal:</strong> Predict whether an individual is at risk of developing growing stress<br><br>
                 <strong>Type:</strong> Binary Classification<br><br>
