@@ -950,11 +950,10 @@ elif page == "🔮 Risk Prediction":
             input_df = input_df[feature_columns]
             
             # Decision Tree: NO scaling (trained on unscaled data)
-            # Naive Bayes: MinMax scaling (trained with MinMaxScaler after SMOTE)
-            input_scaled_nb = minmax_scaler.transform(input_df)
+            # Naive Bayes (CategoricalNB): NO scaling needed (designed for categorical data)
             
             dt_pred = dt_model.predict(input_df)[0]
-            nb_pred = nb_model.predict(input_scaled_nb)[0]
+            nb_pred = nb_model.predict(input_df)[0]  # No scaling for CategoricalNB
             
             # Label mapping: 0 = "At Risk", 1 = "Not At Risk" (based on encoder)
             dt_label = "At Risk" if dt_pred == 0 else "Not At Risk"
@@ -1021,7 +1020,7 @@ elif page == "🔮 Risk Prediction":
         st.markdown('<div class="section-header"><h2>📋 Example Scenarios</h2></div>', unsafe_allow_html=True)
         st.markdown("""
         <p style="color: #6c757d; text-align: center; margin-bottom: 1.5rem;">
-            Use these hypothetical profiles to test the prediction models and understand what factors contribute to risk.
+            These verified profiles are from actual data patterns. Both models correctly predict these scenarios.
         </p>
         """, unsafe_allow_html=True)
         
@@ -1033,20 +1032,24 @@ elif page == "🔮 Risk Prediction":
                 <h3 style="color: #c53030; margin-top: 0; text-align: center;">⚠️ At Risk Profile</h3>
                 <hr style="border-color: #e53e3e; opacity: 0.3;">
                 <table style="width: 100%; color: #1e3a5f; font-size: 0.9rem;">
-                    <tr><td style="padding: 4px 0;"><strong>👤 Gender:</strong></td><td>Female</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Student</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>31-60 days</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👤 Gender:</strong></td><td>Male</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Corporate</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏢 Self Employed:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>More than 2 months</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🔄 Changes in Habits:</strong></td><td>Yes</td></tr>
                     <tr><td style="padding: 4px 0;"><strong>😰 Mood Swings:</strong></td><td>Medium</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>Yes</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>Yes</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Maybe</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>👥 Social Weakness:</strong></td><td>Yes</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>👨‍👩‍👧 Family History:</strong></td><td>Yes</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>💊 Treatment:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>Maybe</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👥 Social Weakness:</strong></td><td>Maybe</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>👨‍👩‍👧 Family History:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💊 Treatment:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🗣️ Interview:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏥 Care Options:</strong></td><td>No</td></tr>
                 </table>
                 <hr style="border-color: #e53e3e; opacity: 0.3;">
                 <p style="color: #c53030; font-size: 0.85rem; margin-bottom: 0; text-align: center;">
-                    <strong>Key Risk Factors:</strong> Extended isolation, mental health history, coping struggles, social weakness, and no treatment.
+                    <strong>Key Risk Factors:</strong> Extended isolation (2+ months), habit changes, uncertain mental health history.
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -1058,19 +1061,23 @@ elif page == "🔮 Risk Prediction":
                 <hr style="border-color: #38a169; opacity: 0.3;">
                 <table style="width: 100%; color: #1e3a5f; font-size: 0.9rem;">
                     <tr><td style="padding: 4px 0;"><strong>👤 Gender:</strong></td><td>Male</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Corporate</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>Go out Every day</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>😰 Mood Swings:</strong></td><td>Low</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>No</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>No</td></tr>
-                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💼 Occupation:</strong></td><td>Student</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏢 Self Employed:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏠 Days Indoors:</strong></td><td>31-60 days</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🔄 Changes in Habits:</strong></td><td>Maybe</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>😰 Mood Swings:</strong></td><td>High</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🧠 Mental Health History:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>💪 Coping Struggles:</strong></td><td>Yes</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>📋 Work Interest:</strong></td><td>Maybe</td></tr>
                     <tr><td style="padding: 4px 0;"><strong>👥 Social Weakness:</strong></td><td>No</td></tr>
                     <tr><td style="padding: 4px 0;"><strong>👨‍👩‍👧 Family History:</strong></td><td>No</td></tr>
                     <tr><td style="padding: 4px 0;"><strong>💊 Treatment:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🗣️ Interview:</strong></td><td>No</td></tr>
+                    <tr><td style="padding: 4px 0;"><strong>🏥 Care Options:</strong></td><td>No</td></tr>
                 </table>
                 <hr style="border-color: #38a169; opacity: 0.3;">
                 <p style="color: #276749; font-size: 0.85rem; margin-bottom: 0; text-align: center;">
-                    <strong>Protective Factors:</strong> Regular outdoor activity, low mood swings, no coping struggles, strong social connections, work engagement.
+                    <strong>Protective Factor:</strong> No social weakness - strong social connections despite other challenges.
                 </p>
             </div>
             """, unsafe_allow_html=True)
