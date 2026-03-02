@@ -226,7 +226,7 @@ dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_resu
 # =====================================================
 # PAGE 1: PROBLEM STATEMENT
 # =====================================================
-if page == "🏠 Problem Statement":
+if page == "Problem Statement":
     st.markdown("""
     <div class="main-header">
         <h1>Stress Trajectory Prediction</h1>
@@ -300,7 +300,7 @@ if page == "🏠 Problem Statement":
 # =====================================================
 # PAGE 2: EDA & INSIGHTS
 # =====================================================
-elif page == "📊 EDA & Insights":
+elif page == "EDA & Insights":
     st.markdown("""
     <div class="main-header">
         <h1>📊 Exploratory Data Analysis</h1>
@@ -475,7 +475,7 @@ elif page == "📊 EDA & Insights":
 
 
 # MODEL PERFORMANCE PAGE
-elif page == "🎯 Model Performance":
+elif page == "Model Performance":
     st.markdown("""
     <div class="main-header">
         <h1>🎯 Model Performance</h1>
@@ -827,7 +827,7 @@ elif page == "🎯 Model Performance":
 
 
 # RISK PREDICTION PAGE
-elif page == "🔮 Risk Prediction":
+elif page == "Risk Prediction":
     st.markdown("""
     <div class="main-header">
         <h1>🔮 Stress Risk Prediction</h1>
