@@ -316,11 +316,13 @@ elif page == "📊 EDA & Insights":
             )
         
         # ===== SOCIAL WEAKNESS VISUALIZATION =====
-        st.markdown('<div class="section-header"><h2>� Social Weakness Analysis</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header"><h2>🤝 Social Weakness Analysis</h2></div>', unsafe_allow_html=True)
         
         if 'Social_Weakness' in df.columns and 'Stress_Risk' in df.columns:
-            # Calculate stats
+            # Calculate stats with proper ordering (No, Maybe, Yes)
             social_risk = pd.crosstab(df['Social_Weakness'], df['Stress_Risk'], normalize='index') * 100
+            category_order = ['No', 'Maybe', 'Yes']
+            social_risk = social_risk.reindex([c for c in category_order if c in social_risk.index])
             
             col1, col2 = st.columns([2, 1])
             
@@ -354,7 +356,8 @@ elif page == "📊 EDA & Insights":
                         xaxis_title="Social Weakness Level",
                         yaxis_title="Percentage %",
                         title=dict(text="<b>Stress Risk by Social Weakness</b>", x=0.5, font_size=16),
-                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5)
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+                        xaxis=dict(categoryorder='array', categoryarray=category_order)
                     )
                     st.plotly_chart(fig, use_container_width=True)
                     
@@ -383,13 +386,15 @@ elif page == "📊 EDA & Insights":
                         height=400,
                         xaxis_title="Social Weakness Level",
                         yaxis_title="Percentage %",
-                        title=dict(text="<b>Stress Risk by Social Weakness (Stacked)</b>", x=0.5, font_size=16)
+                        title=dict(text="<b>Stress Risk by Social Weakness (Stacked)</b>", x=0.5, font_size=16),
+                        xaxis=dict(categoryorder='array', categoryarray=category_order)
                     )
                     st.plotly_chart(fig, use_container_width=True)
                     
                 else:  # Donut Charts
-                    cols = st.columns(len(social_risk.index))
-                    for i, category in enumerate(social_risk.index):
+                    ordered_categories = [c for c in category_order if c in social_risk.index]
+                    cols = st.columns(len(ordered_categories))
+                    for i, category in enumerate(ordered_categories):
                         with cols[i]:
                             values = [social_risk.loc[category, 'At Risk'] if 'At Risk' in social_risk.columns else 0,
                                      social_risk.loc[category, 'Not At Risk'] if 'Not At Risk' in social_risk.columns else 0]
@@ -409,7 +414,8 @@ elif page == "📊 EDA & Insights":
                 # Stats cards
                 st.markdown("### 📊 Quick Stats")
                 
-                for category in social_risk.index:
+                ordered_categories = [c for c in category_order if c in social_risk.index]
+                for category in ordered_categories:
                     at_risk_pct = social_risk.loc[category, 'At Risk'] if 'At Risk' in social_risk.columns else 0
                     color = '#e53e3e' if at_risk_pct > 70 else '#f6ad55' if at_risk_pct > 60 else '#38a169'
                     st.markdown(f"""
@@ -421,9 +427,10 @@ elif page == "📊 EDA & Insights":
                 
                 # Count breakdown
                 st.markdown("### 📈 Sample Counts")
-                counts = df['Social_Weakness'].value_counts()
-                for cat, count in counts.items():
-                    st.markdown(f"**{cat}:** {count:,} ({count/len(df)*100:.1f}%)")
+                for cat in ordered_categories:
+                    if cat in df['Social_Weakness'].values:
+                        count = (df['Social_Weakness'] == cat).sum()
+                        st.markdown(f"**{cat}:** {count:,} ({count/len(df)*100:.1f}%)")
             
             # Insight box
             highest_risk_cat = social_risk['At Risk'].idxmax() if 'At Risk' in social_risk.columns else 'N/A'
