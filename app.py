@@ -216,24 +216,6 @@ with st.sidebar:
         ["🏠 Problem Statement", "📊 EDA & Insights", "🔧 Methodology", "🎯 Model Performance", "🏆 Final Results", "🔮 Risk Prediction"],
         label_visibility="collapsed"
     )
-    
-    st.markdown("---")
-    
-    st.markdown("""
-    <div style="background: linear-gradient(145deg, #e8f4fd 0%, #d4e8f7 100%); 
-                padding: 1rem; border-radius: 12px; margin-top: 1rem;">
-        <p style="font-size: 0.85rem; color: #1e3a5f; margin: 0; text-align: center;">
-            <strong>📋 Project Components</strong><br>
-            ✅ Problem Statement<br>
-            ✅ EDA & Visualizations<br>
-            ✅ Data Preprocessing<br>
-            ✅ 2 ML Algorithms<br>
-            ✅ Hyperparameter Tuning<br>
-            ✅ Model Evaluation<br>
-            ✅ Final Model Selection
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 
 # Load data and models
@@ -333,662 +315,131 @@ elif page == "📊 EDA & Insights":
                 lambda x: 'At Risk' if x in ['Yes', 'Maybe'] else 'Not At Risk'
             )
         
-        # Dataset Overview with Key Stats
-        st.markdown('<div class="section-header"><h2>📋 Dataset at a Glance</h2></div>', unsafe_allow_html=True)
+        # ===== SOCIAL WEAKNESS VISUALIZATION =====
+        st.markdown('<div class="section-header"><h2>� Social Weakness Analysis</h2></div>', unsafe_allow_html=True)
         
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df):,}</div><div class="metric-label">Total Records</div></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df.columns)}</div><div class="metric-label">Features</div></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown(f'<div class="metric-card"><div class="metric-value">{df.isnull().sum().sum()}</div><div class="metric-label">Missing Values</div></div>', unsafe_allow_html=True)
-        with col4:
-            if 'Stress_Risk' in df.columns:
-                at_risk_pct = (df['Stress_Risk'] == 'At Risk').mean() * 100
-                st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #e53e3e;">{at_risk_pct:.1f}%</div><div class="metric-label">At Risk</div></div>', unsafe_allow_html=True)
-        with col5:
-            if 'Stress_Risk' in df.columns:
-                not_risk_pct = (df['Stress_Risk'] == 'Not At Risk').mean() * 100
-                st.markdown(f'<div class="metric-card"><div class="metric-value" style="color: #38a169;">{not_risk_pct:.1f}%</div><div class="metric-label">Not At Risk</div></div>', unsafe_allow_html=True)
-        
-        # ===== TABBED VISUALIZATION SECTIONS =====
-        st.markdown('<div class="section-header"><h2>📈 Interactive Visualizations</h2></div>', unsafe_allow_html=True)
-        
-        viz_tabs = st.tabs([
-            "🎯 Target Distribution", 
-            "🔥 Risk Factors", 
-            "🎭 Mood & Behavior", 
-            "🏠 Lifestyle Impact",
-            "⚖️ Comparative Analysis"
-        ])
-        
-        # ===== TAB 1: Target Distribution =====
-        with viz_tabs[0]:
-            st.markdown("### 🎯 Who is At Risk?")
+        if 'Social_Weakness' in df.columns and 'Stress_Risk' in df.columns:
+            # Calculate stats
+            social_risk = pd.crosstab(df['Social_Weakness'], df['Stress_Risk'], normalize='index') * 100
             
-            viz_type = st.radio("Select Visualization:", ["Donut Chart", "Bar Chart", "Treemap"], horizontal=True, key="target_viz")
+            col1, col2 = st.columns([2, 1])
             
-            if 'Stress_Risk' in df.columns:
-                risk_counts = df['Stress_Risk'].value_counts()
-                colors = {'At Risk': '#e53e3e', 'Not At Risk': '#38a169'}
+            with col1:
+                # Visualization type selector
+                viz_style = st.radio("Select Chart Style:", ["Grouped Bars", "Stacked Bars", "Donut Charts"], horizontal=True, key="social_viz")
                 
-                if viz_type == "Donut Chart":
-                    fig = go.Figure(data=[go.Pie(
-                        labels=risk_counts.index, 
-                        values=risk_counts.values,
-                        hole=0.65,
-                        marker_colors=[colors.get(x, '#999') for x in risk_counts.index],
-                        textinfo='percent+label',
-                        textfont_size=16,
-                        hovertemplate='<b>%{label}</b><br>Count: %{value:,}<br>Percentage: %{percent}<extra></extra>'
-                    )])
-                    fig.add_annotation(text=f"<b>{len(df):,}</b><br>Total", x=0.5, y=0.5, font_size=18, showarrow=False)
-                    fig.update_layout(height=450, showlegend=True)
-                    
-                elif viz_type == "Bar Chart":
-                    fig = go.Figure(data=[go.Bar(
-                        x=risk_counts.index,
-                        y=risk_counts.values,
-                        marker_color=[colors.get(x, '#999') for x in risk_counts.index],
-                        text=[f'{v:,}<br>({v/len(df)*100:.1f}%)' for v in risk_counts.values],
-                        textposition='outside',
-                        textfont=dict(size=14)
-                    )])
-                    fig.update_layout(height=450, xaxis_title="Risk Category", yaxis_title="Count")
-                    
-                else:  # Treemap
-                    fig = go.Figure(go.Treemap(
-                        labels=risk_counts.index,
-                        parents=[''] * len(risk_counts),
-                        values=risk_counts.values,
-                        marker_colors=[colors.get(x, '#999') for x in risk_counts.index],
-                        textinfo='label+value+percent root',
-                        textfont=dict(size=20)
-                    ))
-                    fig.update_layout(height=450)
-                
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Insight card
-                st.markdown("""
-                <div class="info-card">
-                    <h4 style="color: #1e3a5f; margin-top: 0;">💡 Key Insight: Class Imbalance</h4>
-                    <p style="color: #6c757d;">
-                        The dataset shows an <strong>imbalanced distribution</strong>. We address this using:
-                        <strong>class_weight='balanced'</strong> (Decision Tree) and <strong>SMOTE</strong> (Naive Bayes).
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        # ===== TAB 2: Risk Factors =====
-        with viz_tabs[1]:
-            st.markdown("### 🔥 Top Risk Factors")
-            
-            chart_style = st.radio("Chart Style:", ["Horizontal Bars", "Lollipop Chart", "Funnel Chart"], horizontal=True, key="risk_viz")
-            
-            # Calculate risk percentages for each factor
-            risk_factors = {}
-            factor_cols = ['Mood_Swings', 'Coping_Struggles', 'Social_Weakness', 'social_weakness',
-                           'family_history', 'Mental_Health_History', 'Changes_Habits', 'Work_Interest']
-            
-            for col in factor_cols:
-                if col in df.columns and 'Stress_Risk' in df.columns:
-                    cross = pd.crosstab(df[col], df['Stress_Risk'], normalize='index') * 100
-                    if 'At Risk' in cross.columns:
-                        for idx in cross.index:
-                            key = f"{col}: {idx}"
-                            risk_factors[key] = cross.loc[idx, 'At Risk']
-            
-            if risk_factors:
-                sorted_factors = sorted(risk_factors.items(), key=lambda x: x[1], reverse=True)[:10]
-                factor_names = [f[0] for f in sorted_factors]
-                risk_values = [f[1] for f in sorted_factors]
-                
-                if chart_style == "Horizontal Bars":
-                    fig = go.Figure(go.Bar(
-                        x=risk_values,
-                        y=factor_names,
-                        orientation='h',
-                        marker=dict(
-                            color=risk_values,
-                            colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']],
-                            showscale=True,
-                            colorbar=dict(title="Risk %")
-                        ),
-                        text=[f'{v:.1f}%' for v in risk_values],
-                        textposition='outside'
-                    ))
-                    fig.update_layout(height=500, yaxis=dict(autorange="reversed"), xaxis_title="At Risk %")
-                    
-                elif chart_style == "Lollipop Chart":
+                if viz_style == "Grouped Bars":
                     fig = go.Figure()
-                    for i, (name, val) in enumerate(zip(factor_names, risk_values)):
-                        color = '#e53e3e' if val > 60 else '#f6ad55' if val > 40 else '#38a169'
-                        fig.add_trace(go.Scatter(
-                            x=[0, val], y=[name, name],
-                            mode='lines', line=dict(color=color, width=3),
-                            showlegend=False
+                    if 'Not At Risk' in social_risk.columns:
+                        fig.add_trace(go.Bar(
+                            name='Not At Risk',
+                            x=social_risk.index,
+                            y=social_risk['Not At Risk'],
+                            marker_color='#38a169',
+                            text=[f'{v:.1f}%' for v in social_risk['Not At Risk']],
+                            textposition='outside'
                         ))
-                        fig.add_trace(go.Scatter(
-                            x=[val], y=[name],
-                            mode='markers+text', marker=dict(size=15, color=color),
-                            text=[f'{val:.1f}%'], textposition='middle right',
-                            showlegend=False
+                    if 'At Risk' in social_risk.columns:
+                        fig.add_trace(go.Bar(
+                            name='At Risk',
+                            x=social_risk.index,
+                            y=social_risk['At Risk'],
+                            marker_color='#e53e3e',
+                            text=[f'{v:.1f}%' for v in social_risk['At Risk']],
+                            textposition='outside'
                         ))
-                    fig.update_layout(height=500, yaxis=dict(autorange="reversed"), xaxis_title="At Risk %")
-                    
-                else:  # Funnel Chart
-                    fig = go.Figure(go.Funnel(
-                        y=factor_names[:7],
-                        x=risk_values[:7],
-                        textinfo="value+percent initial",
-                        marker=dict(color=['#e53e3e', '#f56565', '#fc8181', '#feb2b2', '#fbd38d', '#f6ad55', '#ed8936'])
-                    ))
-                    fig.update_layout(height=500)
-                
-                st.plotly_chart(fig, use_container_width=True)
-                
-                top_factor = sorted_factors[0][0]
-                top_risk = sorted_factors[0][1]
-                st.markdown(f"""
-                <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1rem; border-left: 4px solid #e53e3e;">
-                    <h4 style="color: #c53030; margin: 0;">📌 Highest Risk: {top_factor}</h4>
-                    <p style="color: #c53030; margin: 0.5rem 0 0 0;"><strong>{top_risk:.1f}%</strong> of individuals in this category are at risk.</p>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        # ===== TAB 3: Mood & Behavior =====
-        with viz_tabs[2]:
-            st.markdown("### 🎭 Mood Swings & Behavior Patterns")
-            
-            behavior_viz = st.radio("Visualization Type:", ["Trend Line", "Stacked Bars", "Grouped Bars"], horizontal=True, key="mood_viz")
-            
-            if 'Mood_Swings' in df.columns and 'Stress_Risk' in df.columns:
-                order = ['Low', 'Medium', 'High']
-                mood_data = df[df['Mood_Swings'].isin(order)]
-                mood_risk = pd.crosstab(mood_data['Mood_Swings'], mood_data['Stress_Risk'], normalize='index') * 100
-                mood_risk = mood_risk.reindex([o for o in order if o in mood_risk.index])
-                
-                if 'At Risk' in mood_risk.columns:
-                    if behavior_viz == "Trend Line":
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(
-                            x=mood_risk.index, y=mood_risk['At Risk'],
-                            fill='tozeroy', mode='lines+markers+text',
-                            marker=dict(size=20, color='#e53e3e'),
-                            line=dict(width=4, color='#e53e3e'),
-                            text=[f'{v:.1f}%' for v in mood_risk['At Risk']],
-                            textposition='top center',
-                            fillcolor='rgba(229, 62, 62, 0.2)',
-                            name='At Risk %'
-                        ))
-                        if len(mood_risk) >= 2:
-                            increase = mood_risk['At Risk'].iloc[-1] - mood_risk['At Risk'].iloc[0]
-                            fig.add_annotation(
-                                x=mood_risk.index[-1], y=mood_risk['At Risk'].iloc[-1] + 8,
-                                text=f"📈 +{increase:.1f}% increase",
-                                showarrow=False, font=dict(size=14, color='#e53e3e')
-                            )
-                        fig.update_layout(height=400, xaxis_title="Mood Swings Level", yaxis_title="At Risk %", yaxis=dict(range=[0, 100]))
-                        
-                    elif behavior_viz == "Stacked Bars":
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(name='Not At Risk', x=mood_risk.index, y=mood_risk.get('Not At Risk', [0]*len(mood_risk)),
-                                           marker_color='#38a169', text=[f'{v:.1f}%' for v in mood_risk.get('Not At Risk', [0])], textposition='inside'))
-                        fig.add_trace(go.Bar(name='At Risk', x=mood_risk.index, y=mood_risk['At Risk'],
-                                           marker_color='#e53e3e', text=[f'{v:.1f}%' for v in mood_risk['At Risk']], textposition='inside'))
-                        fig.update_layout(barmode='stack', height=400, yaxis=dict(range=[0, 100]))
-                        
-                    else:  # Grouped Bars
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(name='Not At Risk', x=mood_risk.index, y=mood_risk.get('Not At Risk', [0]*len(mood_risk)),
-                                           marker_color='#38a169'))
-                        fig.add_trace(go.Bar(name='At Risk', x=mood_risk.index, y=mood_risk['At Risk'],
-                                           marker_color='#e53e3e'))
-                        fig.update_layout(barmode='group', height=400, yaxis=dict(range=[0, 100]))
-                    
+                    fig.update_layout(
+                        barmode='group',
+                        height=400,
+                        xaxis_title="Social Weakness Level",
+                        yaxis_title="Percentage %",
+                        title=dict(text="<b>Stress Risk by Social Weakness</b>", x=0.5, font_size=16),
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5)
+                    )
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    st.markdown("""
-                    <div class="info-card">
-                        <h4 style="color: #1e3a5f; margin-top: 0;">📈 Pattern Detected</h4>
-                        <p style="color: #6c757d;">Clear upward trend: As mood swings severity increases, stress risk increases significantly. 
-                        <strong>Mood regulation support</strong> could be a key intervention point.</p>
+                elif viz_style == "Stacked Bars":
+                    fig = go.Figure()
+                    if 'Not At Risk' in social_risk.columns:
+                        fig.add_trace(go.Bar(
+                            name='Not At Risk',
+                            x=social_risk.index,
+                            y=social_risk['Not At Risk'],
+                            marker_color='#38a169',
+                            text=[f'{v:.1f}%' for v in social_risk['Not At Risk']],
+                            textposition='inside'
+                        ))
+                    if 'At Risk' in social_risk.columns:
+                        fig.add_trace(go.Bar(
+                            name='At Risk',
+                            x=social_risk.index,
+                            y=social_risk['At Risk'],
+                            marker_color='#e53e3e',
+                            text=[f'{v:.1f}%' for v in social_risk['At Risk']],
+                            textposition='inside'
+                        ))
+                    fig.update_layout(
+                        barmode='stack',
+                        height=400,
+                        xaxis_title="Social Weakness Level",
+                        yaxis_title="Percentage %",
+                        title=dict(text="<b>Stress Risk by Social Weakness (Stacked)</b>", x=0.5, font_size=16)
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                else:  # Donut Charts
+                    cols = st.columns(len(social_risk.index))
+                    for i, category in enumerate(social_risk.index):
+                        with cols[i]:
+                            values = [social_risk.loc[category, 'At Risk'] if 'At Risk' in social_risk.columns else 0,
+                                     social_risk.loc[category, 'Not At Risk'] if 'Not At Risk' in social_risk.columns else 0]
+                            fig = go.Figure(data=[go.Pie(
+                                labels=['At Risk', 'Not At Risk'],
+                                values=values,
+                                hole=0.6,
+                                marker_colors=['#e53e3e', '#38a169'],
+                                textinfo='percent',
+                                textfont_size=12
+                            )])
+                            fig.add_annotation(text=f"<b>{category}</b>", x=0.5, y=0.5, font_size=12, showarrow=False)
+                            fig.update_layout(height=250, showlegend=False, margin=dict(t=30, b=10, l=10, r=10))
+                            st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Stats cards
+                st.markdown("### 📊 Quick Stats")
+                
+                for category in social_risk.index:
+                    at_risk_pct = social_risk.loc[category, 'At Risk'] if 'At Risk' in social_risk.columns else 0
+                    color = '#e53e3e' if at_risk_pct > 70 else '#f6ad55' if at_risk_pct > 60 else '#38a169'
+                    st.markdown(f"""
+                    <div class="metric-card" style="border-left: 4px solid {color}; margin-bottom: 0.5rem;">
+                        <div class="metric-value" style="color: {color}; font-size: 1.5rem;">{at_risk_pct:.1f}%</div>
+                        <div class="metric-label">Social Weakness: {category}</div>
                     </div>
                     """, unsafe_allow_html=True)
-        
-        # ===== TAB 4: Lifestyle Impact =====
-        with viz_tabs[3]:
-            st.markdown("### 🏠 Time Indoors & Lifestyle")
-            
-            lifestyle_viz = st.radio("Chart Type:", ["Progressive Bars", "Area Chart", "Step Chart"], horizontal=True, key="lifestyle_viz")
-            
-            if 'Days_Indoors' in df.columns and 'Stress_Risk' in df.columns:
-                order = ['Go out Every day', '1-14 days', '15-30 days', '31-60 days', 'More than 2 months']
-                indoor_data = df[df['Days_Indoors'].isin(order)]
-                indoor_risk = pd.crosstab(indoor_data['Days_Indoors'], indoor_data['Stress_Risk'], normalize='index') * 100
-                indoor_risk = indoor_risk.reindex([o for o in order if o in indoor_risk.index])
-                short_labels = ['Daily', '1-14d', '15-30d', '31-60d', '60d+']
                 
-                if 'At Risk' in indoor_risk.columns and len(indoor_risk) > 0:
-                    if lifestyle_viz == "Progressive Bars":
-                        fig = go.Figure(go.Bar(
-                            x=short_labels[:len(indoor_risk)],
-                            y=indoor_risk['At Risk'],
-                            marker=dict(
-                                color=indoor_risk['At Risk'],
-                                colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']]
-                            ),
-                            text=[f'{v:.1f}%' for v in indoor_risk['At Risk']],
-                            textposition='outside'
-                        ))
-                        fig.update_layout(height=400, xaxis_title="Days Indoors", yaxis_title="At Risk %")
-                        
-                    elif lifestyle_viz == "Area Chart":
-                        fig = go.Figure(go.Scatter(
-                            x=short_labels[:len(indoor_risk)],
-                            y=indoor_risk['At Risk'],
-                            fill='tozeroy',
-                            mode='lines+markers',
-                            marker=dict(size=12, color='#e53e3e'),
-                            line=dict(width=3, color='#e53e3e'),
-                            fillcolor='rgba(229, 62, 62, 0.3)'
-                        ))
-                        fig.update_layout(height=400, xaxis_title="Days Indoors", yaxis_title="At Risk %")
-                        
-                    else:  # Step Chart
-                        fig = go.Figure(go.Scatter(
-                            x=short_labels[:len(indoor_risk)],
-                            y=indoor_risk['At Risk'],
-                            mode='lines+markers',
-                            line=dict(shape='hv', width=3, color='#2d5a87'),
-                            marker=dict(size=15, color='#2d5a87')
-                        ))
-                        fig.update_layout(height=400, xaxis_title="Days Indoors", yaxis_title="At Risk %")
-                    
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    # Stats cards
-                    if len(indoor_risk) >= 2:
-                        first_val = indoor_risk['At Risk'].iloc[0]
-                        last_val = indoor_risk['At Risk'].iloc[-1]
-                        increase = last_val - first_val
-                        
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.markdown(f'<div class="metric-card" style="border-left: 4px solid #38a169;"><div class="metric-value" style="color: #38a169;">{first_val:.1f}%</div><div class="metric-label">Daily Outings</div></div>', unsafe_allow_html=True)
-                        with col2:
-                            st.markdown(f'<div class="metric-card" style="border-left: 4px solid #e53e3e;"><div class="metric-value" style="color: #e53e3e;">{last_val:.1f}%</div><div class="metric-label">60+ Days Indoors</div></div>', unsafe_allow_html=True)
-                        with col3:
-                            st.markdown(f'<div class="metric-card" style="border-left: 4px solid #f6ad55;"><div class="metric-value" style="color: #f6ad55;">+{increase:.1f}%</div><div class="metric-label">Risk Increase</div></div>', unsafe_allow_html=True)
-        
-        # ===== TAB 5: Comparative Analysis =====
-        with viz_tabs[4]:
-            st.markdown("### ⚖️ Factor Comparison")
+                # Count breakdown
+                st.markdown("### 📈 Sample Counts")
+                counts = df['Social_Weakness'].value_counts()
+                for cat, count in counts.items():
+                    st.markdown(f"**{cat}:** {count:,} ({count/len(df)*100:.1f}%)")
             
-            compare_factor = st.selectbox(
-                "Select factor to analyze:",
-                ["family_history", "Coping_Struggles", "treatment", "Work_Interest", "Mental_Health_History"],
-                format_func=lambda x: x.replace('_', ' ').title()
-            )
-            
-            compare_viz = st.radio("Comparison Style:", ["Side-by-Side Bars", "Butterfly Chart", "Gauge Comparison"], horizontal=True, key="compare_viz")
-            
-            if compare_factor in df.columns and 'Stress_Risk' in df.columns:
-                cross = pd.crosstab(df[compare_factor], df['Stress_Risk'], normalize='index') * 100
-                
-                if 'At Risk' in cross.columns:
-                    categories = list(cross.index)
-                    at_risk_vals = [cross.loc[c, 'At Risk'] for c in categories]
-                    not_risk_vals = [cross.loc[c, 'Not At Risk'] if 'Not At Risk' in cross.columns else 0 for c in categories]
-                    
-                    if compare_viz == "Side-by-Side Bars":
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(name='Not At Risk', x=categories, y=not_risk_vals, marker_color='#38a169'))
-                        fig.add_trace(go.Bar(name='At Risk', x=categories, y=at_risk_vals, marker_color='#e53e3e'))
-                        fig.update_layout(barmode='group', height=400, yaxis_title="Percentage %")
-                        
-                    elif compare_viz == "Butterfly Chart":
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(
-                            y=categories, x=[-v for v in not_risk_vals],
-                            orientation='h', name='Not At Risk',
-                            marker_color='#38a169',
-                            text=[f'{v:.1f}%' for v in not_risk_vals],
-                            textposition='outside'
-                        ))
-                        fig.add_trace(go.Bar(
-                            y=categories, x=at_risk_vals,
-                            orientation='h', name='At Risk',
-                            marker_color='#e53e3e',
-                            text=[f'{v:.1f}%' for v in at_risk_vals],
-                            textposition='outside'
-                        ))
-                        fig.update_layout(barmode='relative', height=400, xaxis_title="← Not At Risk | At Risk →")
-                        
-                    else:  # Gauge Comparison
-                        cols = st.columns(len(categories))
-                        for i, cat in enumerate(categories):
-                            with cols[i]:
-                                fig = go.Figure(go.Indicator(
-                                    mode="gauge+number",
-                                    value=at_risk_vals[i],
-                                    title={'text': str(cat), 'font': {'size': 14}},
-                                    number={'suffix': '%'},
-                                    gauge={
-                                        'axis': {'range': [0, 100]},
-                                        'bar': {'color': '#e53e3e' if at_risk_vals[i] > 50 else '#38a169'},
-                                        'steps': [
-                                            {'range': [0, 30], 'color': '#c6f6d5'},
-                                            {'range': [30, 60], 'color': '#feebc8'},
-                                            {'range': [60, 100], 'color': '#fed7d7'}
-                                        ]
-                                    }
-                                ))
-                                fig.update_layout(height=250, margin=dict(t=50, b=20))
-                                st.plotly_chart(fig, use_container_width=True)
-                        fig = None  # Skip the main plotly_chart below
-                    
-                    if fig:
-                        st.plotly_chart(fig, use_container_width=True)
+            # Insight box
+            highest_risk_cat = social_risk['At Risk'].idxmax() if 'At Risk' in social_risk.columns else 'N/A'
+            highest_risk_val = social_risk['At Risk'].max() if 'At Risk' in social_risk.columns else 0
+            st.markdown(f"""
+            <div class="info-card" style="margin-top: 1rem;">
+                <h4 style="color: #1e3a5f; margin-top: 0;">💡 Key Insight: Social Weakness Impact</h4>
+                <p style="color: #6c757d;">
+                    Individuals with <strong>Social Weakness = "{highest_risk_cat}"</strong> show the highest stress risk at <strong>{highest_risk_val:.1f}%</strong>.
+                    Social connections and support systems play a significant role in mental health outcomes.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
         
         # ===== EDA Summary =====
         st.markdown('<div class="section-header"><h2>📝 Key Takeaways</h2></div>', unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="info-card">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                <div>
-                    <h4 style="color: #e53e3e; margin-top: 0;">🔴 High Risk Indicators</h4>
-                    <ul style="color: #6c757d;">
-                        <li>High mood swings severity</li>
-                        <li>Extended time indoors (2+ months)</li>
-                        <li>Coping difficulties</li>
-                        <li>Family history of mental health issues</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 style="color: #38a169; margin-top: 0;">🟢 Protective Factors</h4>
-                    <ul style="color: #6c757d;">
-                        <li>Daily outdoor activities</li>
-                        <li>Low mood swing frequency</li>
-                        <li>Strong coping mechanisms</li>
-                        <li>No family history</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # ===== KEY INSIGHT 1: Target Distribution =====
-        st.markdown('<div class="section-header"><h2>🎯 Target Variable: Who is At Risk?</h2></div>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            if 'Stress_Risk' in df.columns:
-                risk_counts = df['Stress_Risk'].value_counts()
-                colors = {'At Risk': '#e53e3e', 'Not At Risk': '#38a169'}
-                
-                fig = go.Figure(data=[go.Pie(
-                    labels=risk_counts.index, 
-                    values=risk_counts.values,
-                    hole=0.65,
-                    marker_colors=[colors.get(x, '#999') for x in risk_counts.index],
-                    textinfo='percent',
-                    textfont_size=18,
-                    textfont_color='white',
-                    hovertemplate='<b>%{label}</b><br>Count: %{value:,}<br>Percentage: %{percent}<extra></extra>'
-                )])
-                fig.add_annotation(text=f"<b>{len(df):,}</b><br>Total", x=0.5, y=0.5, font_size=16, showarrow=False)
-                fig.update_layout(
-                    title=dict(text="<b>Stress Risk Distribution</b>", x=0.5, font_size=16),
-                    height=350,
-                    showlegend=True,
-                    legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5)
-                )
-                st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.markdown("""
-            <div class="info-card">
-                <h4 style="color: #1e3a5f; margin-top: 0;">💡 Key Insight: Class Imbalance</h4>
-                <p style="color: #6c757d;">
-                    The dataset shows an <strong>imbalanced distribution</strong> between risk categories.
-                    This is common in mental health data where "at risk" cases are often the minority.
-                </p>
-                <p style="color: #6c757d;">
-                    <strong>Our approach:</strong><br>
-                    • Decision Tree: <code>class_weight='balanced'</code><br>
-                    • Naive Bayes: <code>SMOTE</code> oversampling<br>
-                    • Primary metric: <strong>Recall</strong> (catch all at-risk individuals)
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # ===== KEY INSIGHT 2: Risk Factors Analysis =====
-        st.markdown('<div class="section-header"><h2>🔍 What Factors Increase Stress Risk?</h2></div>', unsafe_allow_html=True)
-        
-        # Calculate risk percentages for each factor
-        risk_factors = {}
-        factor_cols = ['Mood_Swings', 'Coping_Struggles', 'social_weakness', 'Social_Weakness', 
-                       'family_history', 'mental_health_history', 'Changes_Habits', 'Work_Interest']
-        
-        for col in factor_cols:
-            if col in df.columns and 'Stress_Risk' in df.columns:
-                cross = pd.crosstab(df[col], df['Stress_Risk'], normalize='index') * 100
-                if 'At Risk' in cross.columns:
-                    for idx in cross.index:
-                        key = f"{col}: {idx}"
-                        risk_factors[key] = cross.loc[idx, 'At Risk']
-        
-        # Sort and get top risk factors
-        if risk_factors:
-            sorted_factors = sorted(risk_factors.items(), key=lambda x: x[1], reverse=True)[:10]
-            
-            factor_names = [f[0] for f in sorted_factors]
-            risk_values = [f[1] for f in sorted_factors]
-            
-            # Create gradient colors based on risk level
-            colors = [f'rgb({min(255, int(150 + v*1.5))}, {max(0, int(180 - v*2))}, {max(0, int(100 - v))})' for v in risk_values]
-            
-            fig = go.Figure(go.Bar(
-                x=risk_values,
-                y=factor_names,
-                orientation='h',
-                marker=dict(
-                    color=risk_values,
-                    colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']],
-                    showscale=True,
-                    colorbar=dict(title="Risk %", ticksuffix="%")
-                ),
-                text=[f'{v:.1f}%' for v in risk_values],
-                textposition='outside',
-                hovertemplate='<b>%{y}</b><br>At Risk: %{x:.1f}%<extra></extra>'
-            ))
-            fig.update_layout(
-                title=dict(text="<b>🔥 Top Risk Factors (Higher % = More At Risk)</b>", font_size=16),
-                xaxis=dict(title="Percentage At Risk (%)", range=[0, max(risk_values) + 10]),
-                yaxis=dict(title="", autorange="reversed"),
-                height=450,
-                margin=dict(l=200)
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Insight box
-            top_factor = sorted_factors[0][0]
-            top_risk = sorted_factors[0][1]
-            st.markdown(f"""
-            <div style="background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%); border-radius: 12px; padding: 1rem; border-left: 4px solid #e53e3e; margin: 1rem 0;">
-                <h4 style="color: #c53030; margin-top: 0;">📌 Critical Finding</h4>
-                <p style="color: #c53030;">
-                    <strong>{top_factor}</strong> shows the highest risk at <strong>{top_risk:.1f}%</strong>. 
-                    This factor should be prioritized in mental health screening.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # ===== KEY INSIGHT 3: Mood Swings Trend =====
-        st.markdown('<div class="section-header"><h2>🎭 Mood Swings: A Clear Pattern Emerges</h2></div>', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            if 'Mood_Swings' in df.columns and 'Stress_Risk' in df.columns:
-                order = ['Low', 'Medium', 'High']
-                mood_risk = pd.crosstab(df['Mood_Swings'], df['Stress_Risk'], normalize='index') * 100
-                mood_risk = mood_risk.reindex([o for o in order if o in mood_risk.index])
-                
-                if 'At Risk' in mood_risk.columns:
-                    fig = go.Figure()
-                    
-                    # Area chart showing risk trend
-                    fig.add_trace(go.Scatter(
-                        x=mood_risk.index, y=mood_risk['At Risk'],
-                        fill='tozeroy', mode='lines+markers+text',
-                        marker=dict(size=15, color='#e53e3e'),
-                        line=dict(width=3, color='#e53e3e'),
-                        text=[f'{v:.1f}%' for v in mood_risk['At Risk']],
-                        textposition='top center',
-                        textfont=dict(size=14, color='#e53e3e'),
-                        fillcolor='rgba(229, 62, 62, 0.2)',
-                        name='At Risk %'
-                    ))
-                    
-                    # Add arrow annotation
-                    if len(mood_risk) >= 2:
-                        increase = mood_risk['At Risk'].iloc[-1] - mood_risk['At Risk'].iloc[0]
-                        fig.add_annotation(
-                            x=mood_risk.index[-1], y=mood_risk['At Risk'].iloc[-1] + 5,
-                            text=f"📈 +{increase:.1f}%",
-                            showarrow=False, font=dict(size=14, color='#e53e3e')
-                        )
-                    
-                    fig.update_layout(
-                        title=dict(text="<b>Risk Increases with Mood Swings Severity</b>", font_size=16),
-                        xaxis=dict(title="Mood Swings Level"),
-                        yaxis=dict(title="At Risk (%)", range=[0, 100]),
-                        height=350,
-                        showlegend=False
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.markdown("""
-            <div class="info-card">
-                <h4 style="color: #1e3a5f; margin-top: 0;">📈 Trend Analysis</h4>
-                <p style="color: #6c757d;">
-                    There's a <strong>clear upward trend</strong>: as mood swings intensity increases, 
-                    so does the likelihood of being at risk for stress.
-                </p>
-                <p style="color: #6c757d;">
-                    <strong>Implication:</strong> Mood regulation support could be a key intervention point.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # ===== KEY INSIGHT 4: Days Indoors Impact =====
-        st.markdown('<div class="section-header"><h2>🏠 Time Indoors: Isolation & Stress</h2></div>', unsafe_allow_html=True)
-        
-        if 'Days_Indoors' in df.columns and 'Stress_Risk' in df.columns:
-            order = ['Go out Every day', '1-14 days', '15-30 days', '31-60 days', 'More than 2 months']
-            indoor_risk = pd.crosstab(df['Days_Indoors'], df['Stress_Risk'], normalize='index') * 100
-            indoor_risk = indoor_risk.reindex([o for o in order if o in indoor_risk.index])
-            
-            if 'At Risk' in indoor_risk.columns and len(indoor_risk) > 0:
-                fig = go.Figure()
-                
-                # Gradient bar chart
-                fig.add_trace(go.Bar(
-                    x=indoor_risk.index,
-                    y=indoor_risk['At Risk'],
-                    marker=dict(
-                        color=indoor_risk['At Risk'],
-                        colorscale=[[0, '#38a169'], [0.5, '#f6ad55'], [1, '#e53e3e']]
-                    ),
-                    text=[f'{v:.1f}%' for v in indoor_risk['At Risk']],
-                    textposition='outside',
-                    textfont=dict(size=12),
-                    hovertemplate='<b>%{x}</b><br>At Risk: %{y:.1f}%<extra></extra>'
-                ))
-                
-                # Add trend line
-                x_numeric = list(range(len(indoor_risk)))
-                fig.add_trace(go.Scatter(
-                    x=indoor_risk.index, y=indoor_risk['At Risk'],
-                    mode='lines+markers',
-                    line=dict(dash='dot', width=2, color='#1e3a5f'),
-                    marker=dict(size=8, color='#1e3a5f'),
-                    name='Trend',
-                    showlegend=False
-                ))
-                
-                fig.update_layout(
-                    title=dict(text="<b>📈 More Time Indoors = Higher Stress Risk</b>", font_size=16),
-                    xaxis=dict(title="Days Spent Indoors", tickangle=-15),
-                    yaxis=dict(title="At Risk (%)", range=[0, max(indoor_risk['At Risk']) + 15]),
-                    height=400,
-                    showlegend=False
-                )
-                st.plotly_chart(fig, use_container_width=True)
-                
-                # Calculate and display the increase
-                if len(indoor_risk) >= 2:
-                    first_val = indoor_risk['At Risk'].iloc[0]
-                    last_val = indoor_risk['At Risk'].iloc[-1]
-                    increase = last_val - first_val
-                    
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #38a169;"><div class="metric-value" style="color: #38a169;">{first_val:.1f}%</div><div class="metric-label">Daily Outings (Baseline)</div></div>', unsafe_allow_html=True)
-                    with col2:
-                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #e53e3e;"><div class="metric-value" style="color: #e53e3e;">{last_val:.1f}%</div><div class="metric-label">2+ Months Indoors</div></div>', unsafe_allow_html=True)
-                    with col3:
-                        st.markdown(f'<div class="metric-card" style="border-left: 4px solid #f6ad55;"><div class="metric-value" style="color: #f6ad55;">+{increase:.1f}%</div><div class="metric-label">Risk Increase</div></div>', unsafe_allow_html=True)
-        
-        # ===== KEY INSIGHT 5: Comparative Analysis =====
-        st.markdown('<div class="section-header"><h2>⚖️ Comparative Risk Analysis</h2></div>', unsafe_allow_html=True)
-        
-        # Create side-by-side comparisons
-        compare_cols = [
-            ('family_history', 'Family History', 'Yes', 'No'),
-            ('Coping_Struggles', 'Coping Struggles', 'Yes', 'No'),
-            ('treatment', 'Treatment', 'Yes', 'No')
-        ]
-        
-        cols = st.columns(3)
-        for i, (col_name, display_name, yes_val, no_val) in enumerate(compare_cols):
-            if col_name in df.columns and 'Stress_Risk' in df.columns:
-                cross = pd.crosstab(df[col_name], df['Stress_Risk'], normalize='index') * 100
-                
-                if 'At Risk' in cross.columns:
-                    with cols[i]:
-                        yes_risk = cross.loc[yes_val, 'At Risk'] if yes_val in cross.index else 0
-                        no_risk = cross.loc[no_val, 'At Risk'] if no_val in cross.index else 0
-                        diff = yes_risk - no_risk
-                        
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(
-                            x=[f'No {display_name}', f'Has {display_name}'],
-                            y=[no_risk, yes_risk],
-                            marker_color=['#38a169', '#e53e3e'],
-                            text=[f'{no_risk:.1f}%', f'{yes_risk:.1f}%'],
-                            textposition='outside'
-                        ))
-                        fig.update_layout(
-                            title=dict(text=f"<b>{display_name}</b>", font_size=14),
-                            yaxis=dict(range=[0, max(yes_risk, no_risk) + 15], title="At Risk %"),
-                            height=300,
-                            margin=dict(t=50, b=30)
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                        
-                        if diff > 0:
-                            st.markdown(f"<p style='text-align: center; color: #e53e3e;'><strong>+{diff:.1f}%</strong> higher risk</p>", unsafe_allow_html=True)
-        
-        # ===== EDA Summary =====
-        st.markdown('<div class="section-header"><h2>📝 EDA Key Takeaways</h2></div>', unsafe_allow_html=True)
         
         st.markdown("""
         <div class="info-card">
@@ -1319,10 +770,9 @@ elif page == "🔮 Risk Prediction":
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            model_choice = st.radio(
+            model_choice = st.selectbox(
                 "Choose which model to use for prediction:",
                 ["🌳 Decision Tree", "📊 Naive Bayes", "🔄 Both Models (Compare)"],
-                horizontal=True,
                 index=2  # Default to "Both Models"
             )
         
