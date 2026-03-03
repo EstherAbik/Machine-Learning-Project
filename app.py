@@ -616,70 +616,152 @@ elif page == "Model Performance":
         # ===== INNOVATIVE VIZ 4: Confusion Matrix Heatmaps =====
         st.markdown('<div class="section-header"><h2>🔢 Confusion Matrix Analysis</h2></div>', unsafe_allow_html=True)
         
-        col1, col2 = st.columns(2)
-        
         # Get confusion matrices from model_results
         dt_cm = model_results['Decision Tree'].get('Confusion Matrix', [[0,0],[0,0]])
         nb_cm = model_results['Naive Bayes'].get('Confusion Matrix', [[0,0],[0,0]])
         
+        col1, col2 = st.columns(2)
+        
         with col1:
+            st.markdown("""
+            <div style="background: linear-gradient(145deg, #e8f4fd 0%, #d1e8f7 100%); 
+                        border-radius: 12px; padding: 1rem; border: 2px solid #2d5a87; margin-bottom: 0.5rem;">
+                <h3 style="color: #1e3a5f; text-align: center; margin: 0;">🌳 Decision Tree</h3>
+                <p style="color: #6c757d; text-align: center; margin: 0.25rem 0 0 0; font-size: 0.85rem;">14 Features • All Data</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if dt_cm and len(dt_cm) == 2:
+                # Create annotated heatmap
                 fig_cm_dt = go.Figure(data=go.Heatmap(
                     z=dt_cm,
-                    x=['Predicted: Not At Risk', 'Predicted: At Risk'],
-                    y=['Actual: Not At Risk', 'Actual: At Risk'],
-                    colorscale=[[0, '#e8f4fd'], [1, '#2d5a87']],
+                    x=['Predicted:<br>Not At Risk', 'Predicted:<br>At Risk'],
+                    y=['Actual:<br>Not At Risk', 'Actual:<br>At Risk'],
+                    colorscale=[[0, '#cce5ff'], [0.5, '#4a90d9'], [1, '#1e3a5f']],
                     showscale=False,
-                    text=[[f'{dt_cm[0][0]:,}', f'{dt_cm[0][1]:,}'],
-                          [f'{dt_cm[1][0]:,}', f'{dt_cm[1][1]:,}']],
+                    text=[[f'TN<br>{dt_cm[0][0]:,}', f'FP<br>{dt_cm[0][1]:,}'],
+                          [f'FN<br>{dt_cm[1][0]:,}', f'TP<br>{dt_cm[1][1]:,}']],
                     texttemplate='%{text}',
-                    textfont={'size': 18, 'color': 'white'},
+                    textfont={'size': 16, 'color': 'white'},
                     hovertemplate='Actual: %{y}<br>Predicted: %{x}<br>Count: %{z:,}<extra></extra>'
                 ))
                 fig_cm_dt.update_layout(
-                    title=dict(text="<b>🌳 Decision Tree</b>", x=0.5, font_size=14),
-                    height=300,
-                    xaxis=dict(side='bottom'),
-                    yaxis=dict(autorange='reversed')
+                    height=280,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    xaxis=dict(side='bottom', tickfont=dict(size=11)),
+                    yaxis=dict(autorange='reversed', tickfont=dict(size=11))
                 )
                 st.plotly_chart(fig_cm_dt, use_container_width=True)
+                
+                # Statistics breakdown
+                tn, fp, fn, tp = dt_cm[0][0], dt_cm[0][1], dt_cm[1][0], dt_cm[1][1]
+                total = tn + fp + fn + tp
+                st.markdown(f"""
+                <div style="background: white; border-radius: 8px; padding: 0.75rem; border: 1px solid #e0e0e0;">
+                    <table style="width: 100%; font-size: 0.85rem; color: #1e3a5f;">
+                        <tr>
+                            <td style="padding: 4px;"><strong>✅ True Negatives:</strong></td>
+                            <td style="text-align: right;">{tn:,} ({tn/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>✅ True Positives:</strong></td>
+                            <td style="text-align: right;">{tp:,} ({tp/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>⚡ False Positives:</strong></td>
+                            <td style="text-align: right;">{fp:,} ({fp/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>❌ False Negatives:</strong></td>
+                            <td style="text-align: right;">{fn:,} ({fn/total*100:.1f}%)</td>
+                        </tr>
+                        <tr style="border-top: 1px solid #e0e0e0;">
+                            <td style="padding: 4px;"><strong>📊 Total Samples:</strong></td>
+                            <td style="text-align: right;"><strong>{total:,}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                """, unsafe_allow_html=True)
         
         with col2:
+            st.markdown("""
+            <div style="background: linear-gradient(145deg, #f0fff4 0%, #c6f6d5 100%); 
+                        border-radius: 12px; padding: 1rem; border: 2px solid #38a169; margin-bottom: 0.5rem;">
+                <h3 style="color: #276749; text-align: center; margin: 0;">📊 Naive Bayes</h3>
+                <p style="color: #6c757d; text-align: center; margin: 0.25rem 0 0 0; font-size: 0.85rem;">7 Features • Maybe Removed</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if nb_cm and len(nb_cm) == 2:
+                # Create annotated heatmap
                 fig_cm_nb = go.Figure(data=go.Heatmap(
                     z=nb_cm,
-                    x=['Predicted: Not At Risk', 'Predicted: At Risk'],
-                    y=['Actual: Not At Risk', 'Actual: At Risk'],
-                    colorscale=[[0, '#f0fff4'], [1, '#38a169']],
+                    x=['Predicted:<br>Not At Risk', 'Predicted:<br>At Risk'],
+                    y=['Actual:<br>Not At Risk', 'Actual:<br>At Risk'],
+                    colorscale=[[0, '#c6f6d5'], [0.5, '#68d391'], [1, '#276749']],
                     showscale=False,
-                    text=[[f'{nb_cm[0][0]:,}', f'{nb_cm[0][1]:,}'],
-                          [f'{nb_cm[1][0]:,}', f'{nb_cm[1][1]:,}']],
+                    text=[[f'TN<br>{nb_cm[0][0]:,}', f'FP<br>{nb_cm[0][1]:,}'],
+                          [f'FN<br>{nb_cm[1][0]:,}', f'TP<br>{nb_cm[1][1]:,}']],
                     texttemplate='%{text}',
-                    textfont={'size': 18, 'color': 'white'},
+                    textfont={'size': 16, 'color': 'white'},
                     hovertemplate='Actual: %{y}<br>Predicted: %{x}<br>Count: %{z:,}<extra></extra>'
                 ))
                 fig_cm_nb.update_layout(
-                    title=dict(text="<b>📊 Naive Bayes</b>", x=0.5, font_size=14),
-                    height=300,
-                    xaxis=dict(side='bottom'),
-                    yaxis=dict(autorange='reversed')
+                    height=280,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    xaxis=dict(side='bottom', tickfont=dict(size=11)),
+                    yaxis=dict(autorange='reversed', tickfont=dict(size=11))
                 )
                 st.plotly_chart(fig_cm_nb, use_container_width=True)
+                
+                # Statistics breakdown
+                tn, fp, fn, tp = nb_cm[0][0], nb_cm[0][1], nb_cm[1][0], nb_cm[1][1]
+                total = tn + fp + fn + tp
+                st.markdown(f"""
+                <div style="background: white; border-radius: 8px; padding: 0.75rem; border: 1px solid #e0e0e0;">
+                    <table style="width: 100%; font-size: 0.85rem; color: #1e3a5f;">
+                        <tr>
+                            <td style="padding: 4px;"><strong>✅ True Negatives:</strong></td>
+                            <td style="text-align: right;">{tn:,} ({tn/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>✅ True Positives:</strong></td>
+                            <td style="text-align: right;">{tp:,} ({tp/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>⚡ False Positives:</strong></td>
+                            <td style="text-align: right;">{fp:,} ({fp/total*100:.1f}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 4px;"><strong>❌ False Negatives:</strong></td>
+                            <td style="text-align: right;">{fn:,} ({fn/total*100:.1f}%)</td>
+                        </tr>
+                        <tr style="border-top: 1px solid #e0e0e0;">
+                            <td style="padding: 4px;"><strong>📊 Total Samples:</strong></td>
+                            <td style="text-align: right;"><strong>{total:,}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                """, unsafe_allow_html=True)
         
         # Confusion matrix interpretation
         st.markdown("""
-        <div class="info-card">
-            <h4 style="color: #1e3a5f; margin-top: 0;">📖 How to Read the Confusion Matrix</h4>
+        <div class="info-card" style="margin-top: 1.5rem;">
+            <h4 style="color: #1e3a5f; margin-top: 0;">📖 Understanding the Confusion Matrix</h4>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; color: #6c757d;">
-                <div>
-                    <p><strong>Top-Left (True Negative):</strong> Correctly identified as Not At Risk ✅</p>
-                    <p><strong>Top-Right (False Positive):</strong> Incorrectly flagged as At Risk ⚡</p>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                    <p style="margin: 0.25rem 0;"><strong style="color: #38a169;">✅ True Negative (TN):</strong> Correctly identified as Not At Risk</p>
+                    <p style="margin: 0.25rem 0;"><strong style="color: #38a169;">✅ True Positive (TP):</strong> Correctly identified as At Risk</p>
                 </div>
-                <div>
-                    <p><strong>Bottom-Left (False Negative):</strong> Missed At-Risk individuals ❌</p>
-                    <p><strong>Bottom-Right (True Positive):</strong> Correctly identified as At Risk ✅</p>
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                    <p style="margin: 0.25rem 0;"><strong style="color: #f6ad55;">⚡ False Positive (FP):</strong> Incorrectly flagged as At Risk (Type I Error)</p>
+                    <p style="margin: 0.25rem 0;"><strong style="color: #e53e3e;">❌ False Negative (FN):</strong> Missed At-Risk individuals (Type II Error)</p>
                 </div>
             </div>
+            <p style="color: #6c757d; text-align: center; margin-top: 1rem; font-style: italic;">
+                <strong>For mental health screening:</strong> False Negatives (FN) are most critical to minimize — 
+                we don't want to miss anyone who might be at risk.
+            </p>
         </div>
         """, unsafe_allow_html=True)
         
