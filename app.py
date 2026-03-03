@@ -146,10 +146,15 @@ def load_models():
     try:
         dt_model = joblib.load('models/decision_tree_model.pkl')
         nb_model = joblib.load('models/naive_bayes_model.pkl')
-        scaler = joblib.load('models/scaler.pkl')
-        minmax_scaler = joblib.load('models/minmax_scaler.pkl')
-        encoders = joblib.load('models/encoders.pkl')
-        feature_columns = joblib.load('models/feature_columns.pkl')
+        
+        # DT uses all 14 features
+        dt_encoders = joblib.load('models/encoders.pkl')
+        dt_feature_columns = joblib.load('models/feature_columns.pkl')
+        
+        # NB uses only 7 optimized features (Maybe rows removed during training)
+        nb_encoders = joblib.load('models/nb_encoders.pkl')
+        nb_feature_columns = joblib.load('models/nb_feature_columns.pkl')
+        
         raw_results = joblib.load('models/model_results.pkl')
         
         # Transform results to expected format
@@ -171,7 +176,7 @@ def load_models():
             'best_model': raw_results.get('best_model', 'Decision Tree'),
             'class_labels': raw_results.get('class_labels', ['Not At Risk', 'At Risk'])
         }
-        return dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_results
+        return dt_model, nb_model, dt_encoders, dt_feature_columns, nb_encoders, nb_feature_columns, model_results
     except Exception as e:
         st.error(f"Error loading models: {e}")
         return None, None, None, None, None, None, None
@@ -220,7 +225,11 @@ with st.sidebar:
 
 # Load data and models
 df = load_data()
-dt_model, nb_model, scaler, minmax_scaler, encoders, feature_columns, model_results = load_models()
+dt_model, nb_model, dt_encoders, dt_feature_columns, nb_encoders, nb_feature_columns, model_results = load_models()
+
+# For backward compatibility - use DT encoders as default for UI dropdowns
+encoders = dt_encoders
+feature_columns = dt_feature_columns
 
 
 # =====================================================
@@ -910,7 +919,7 @@ elif page == "Risk Prediction":
             predict_button = st.button("🔮 Analyze Risk", use_container_width=True)
         
         if predict_button:
-            # Map inputs to correct feature column names
+            # Map inputs to correct feature column names (all 14 features)
             input_data = {
                 'Gender': gender, 
                 'Occupation': occupation, 
@@ -928,32 +937,54 @@ elif page == "Risk Prediction":
                 'care_options': care_options
             }
             
-            input_df = pd.DataFrame([input_data])
-            for col in input_df.columns:
-                if col in encoders:
-                    encoder = encoders[col]
+            # Prepare Decision Tree input (14 features)
+            dt_input_df = pd.DataFrame([input_data])
+            for col in dt_input_df.columns:
+                if col in dt_encoders:
+                    encoder = dt_encoders[col]
                     try:
-                        # Handle LabelEncoder objects
                         if hasattr(encoder, 'transform'):
-                            input_df[col] = encoder.transform(input_df[col])
-                        # Handle dict mappings
+                            dt_input_df[col] = encoder.transform(dt_input_df[col])
                         elif isinstance(encoder, dict):
-                            input_df[col] = input_df[col].map(encoder)
+                            dt_input_df[col] = dt_input_df[col].map(encoder)
                         else:
-                            input_df[col] = 0
+                            dt_input_df[col] = 0
                     except:
-                        input_df[col] = 0
+                        dt_input_df[col] = 0
             
-            for col in feature_columns:
-                if col not in input_df.columns:
-                    input_df[col] = 0
-            input_df = input_df[feature_columns]
+            for col in dt_feature_columns:
+                if col not in dt_input_df.columns:
+                    dt_input_df[col] = 0
+            dt_input_df = dt_input_df[dt_feature_columns]
+            
+            # Prepare Naive Bayes input (7 optimized features)
+            # NB features: Mood_Swings, Days_Indoors, Occupation, Social_Weakness, Changes_Habits, Gender, Coping_Struggles
+            nb_input_data = {col: input_data[col] for col in nb_feature_columns if col in input_data}
+            nb_input_df = pd.DataFrame([nb_input_data])
+            
+            for col in nb_input_df.columns:
+                if col in nb_encoders:
+                    encoder = nb_encoders[col]
+                    try:
+                        if hasattr(encoder, 'transform'):
+                            nb_input_df[col] = encoder.transform(nb_input_df[col])
+                        elif isinstance(encoder, dict):
+                            nb_input_df[col] = nb_input_df[col].map(encoder)
+                        else:
+                            nb_input_df[col] = 0
+                    except:
+                        nb_input_df[col] = 0
+            
+            for col in nb_feature_columns:
+                if col not in nb_input_df.columns:
+                    nb_input_df[col] = 0
+            nb_input_df = nb_input_df[nb_feature_columns]
             
             # Decision Tree: NO scaling (trained on unscaled data)
             # Naive Bayes (CategoricalNB): NO scaling needed (designed for categorical data)
             
-            dt_pred = dt_model.predict(input_df)[0]
-            nb_pred = nb_model.predict(input_df)[0]  # No scaling for CategoricalNB
+            dt_pred = dt_model.predict(dt_input_df)[0]
+            nb_pred = nb_model.predict(nb_input_df)[0]  # Uses 7 features
             
             # Label mapping: 0 = "At Risk", 1 = "Not At Risk" (based on encoder)
             dt_label = "At Risk" if dt_pred == 0 else "Not At Risk"
