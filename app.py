@@ -1108,7 +1108,7 @@ elif page == "Risk Prediction":
 # =====================================================
 # PAGE 5: METHODOLOGY
 # =====================================================
-elif page == "🔧 Methodology":
+elif page == "Methodology":
     st.markdown("""
     <div class="main-header">
         <h1>🔧 Methodology</h1>
