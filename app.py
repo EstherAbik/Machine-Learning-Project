@@ -36,7 +36,7 @@ st.set_page_config(
 )
 
 # Replace with your real dataset link if you want
-DATASET_URL = "https://www.kaggle.com/datasets"
+DATASET_URL = "https://www.kaggle.com/datasets/bhavikjikadara/mental-health-dataset/data?select=Mental+Health+Dataset.csv"
 
 BASE_DIR = Path(__file__).parent
 MODELS_DIR = BASE_DIR / "models"
