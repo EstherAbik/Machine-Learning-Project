@@ -440,7 +440,7 @@ elif page == "Model Performance":
 
 
 # ---------------------------------------------------
-# PAGE: Prediction Demo
+# PAGE: Prediction 
 # ---------------------------------------------------
 elif page == "Prediction":
     st.markdown('<div class="main-header"><h1>Growing stress risk Prediction</h1></div>', unsafe_allow_html=True)
@@ -468,7 +468,11 @@ elif page == "Prediction":
             work_interest = st.selectbox("Work Interest", get_encoder_classes(dt_encoders, "Work_Interest", ["Yes", "No", "Maybe"]))
             history = st.selectbox("Mental Health History", get_encoder_classes(dt_encoders, "Mental_Health_History", ["Yes", "No", "Maybe"]))
 
-        if st.button("Predict"):
+        col1, col2, col3 = st.columns([1, 3, 1])
+        with col2:
+            predict_button = st.button("Predict", use_container_width=True)
+
+        if predict_button:
             input_data = {
                 "Mood_Swings": mood,
                 "Days_Indoors": days_indoors,
