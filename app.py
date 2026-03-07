@@ -230,7 +230,7 @@ with st.sidebar:
     "Navigation",
     [
         "Introduction",
-        "EDA & Insights",
+        "EDA",
         "Preprocessing",
         "Model Performance",
         "Prediction Demo"
@@ -257,7 +257,7 @@ if page == "Introduction":
 # ---------------------------------------------------
 # PAGE: EDA
 # ---------------------------------------------------
-elif page == "EDA & Insights":
+elif page == "EDA":
     st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>Choose which visualization section to view</p></div>', unsafe_allow_html=True)
 
     if df is None:
