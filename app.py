@@ -247,6 +247,7 @@ if page == "Introduction":
     st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
     st.write("**Problem Type:** Binary Classification")
     st.write("**Target Variable:** `Stress_Risk`")
+    st.write("**Algorithm Used:** Naive Bayes and Decision Tree")
     st.link_button("Open Dataset on Kaggle", DATASET_URL)
     if df is not None:
         st.markdown('<div class="section-header"><h2>Dataset Sample</h2></div>', unsafe_allow_html=True)
