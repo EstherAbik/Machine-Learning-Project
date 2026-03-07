@@ -1,10 +1,15 @@
 """
 Stress Trajectory Prediction - Mental Health Analysis Platform
-Updated so that:
-- Model choice appears at the top of the app
-- EDA page lets the user pick which visualization section to view
-- Includes correlation heatmap
-- Includes decision tree visualization
+
+Features:
+- Dataset link
+- EDA section picker
+- Correlation heatmap
+- Decision tree visualization
+- Feature importance
+- Model comparison
+- Prediction demo
+- Model choice only inside Prediction Demo
 """
 
 import streamlit as st
@@ -69,12 +74,12 @@ st.markdown("""
         margin: 0;
         font-size: 1.3rem;
     }
-    .metric-card {
-        background: white;
-        padding: 1rem;
+    .info-card {
+        background: linear-gradient(145deg, #e8f4fd 0%, #d4e8f7 100%);
         border-radius: 12px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.07);
-        margin-bottom: 1rem;
+        padding: 1rem 1.1rem;
+        border-left: 4px solid #2d5a87;
+        margin: 0.8rem 0;
     }
     .prediction-at-risk {
         background: #fff5f5;
@@ -89,13 +94,6 @@ st.markdown("""
         border-radius: 12px;
         padding: 1.4rem;
         text-align: center;
-    }
-    .info-card {
-        background: linear-gradient(145deg, #e8f4fd 0%, #d4e8f7 100%);
-        border-radius: 12px;
-        padding: 1rem 1.1rem;
-        border-left: 4px solid #2d5a87;
-        margin: 0.8rem 0;
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -172,7 +170,8 @@ def show_prediction_card(title, label):
     icon = "⚠️" if risk else "✅"
     color = "#e53e3e" if risk else "#38a169"
     st.markdown(
-        f'<div class="{css}"><h3 style="color:{color};">{title}</h3><div style="font-size:3rem;">{icon}</div><h2 style="color:{color};">{label}</h2></div>',
+        f'<div class="{css}"><h3 style="color:{color};">{title}</h3>'
+        f'<div style="font-size:3rem;">{icon}</div><h2 style="color:{color};">{label}</h2></div>',
         unsafe_allow_html=True
     )
 
@@ -242,16 +241,6 @@ with st.sidebar:
     )
 
 # ---------------------------------------------------
-# TOP MODEL CHOICE (GLOBAL)
-# ---------------------------------------------------
-st.markdown('<div class="section-header"><h2>🤖 Model Choice</h2></div>', unsafe_allow_html=True)
-global_model_choice = st.selectbox(
-    "Choose model to use across the app",
-    ["Decision Tree", "Naive Bayes", "Compare Both"],
-    index=2
-)
-
-# ---------------------------------------------------
 # PAGE: Problem Statement
 # ---------------------------------------------------
 if page == "Problem Statement":
@@ -283,7 +272,6 @@ elif page == "Dataset Overview":
         c1.metric("Rows", len(df))
         c2.metric("Columns", len(df.columns))
         c3.metric("Selected Features", len(dt_feature_columns) if dt_feature_columns else 0)
-
         st.dataframe(df.head(10), use_container_width=True)
 
 # ---------------------------------------------------
@@ -448,6 +436,13 @@ elif page == "Prediction Demo":
     if dt_model is None or nb_model is None or dt_encoders is None:
         st.error("Models or encoders not loaded.")
     else:
+        st.markdown('<div class="section-header"><h2>Choose model for prediction</h2></div>', unsafe_allow_html=True)
+        model_choice = st.selectbox(
+            "Model choice",
+            ["Decision Tree", "Naive Bayes", "Compare Both"],
+            index=2
+        )
+
         c1, c2, c3 = st.columns(3)
         with c1:
             gender = st.selectbox("Gender", get_encoder_classes(dt_encoders, "Gender", ["Male", "Female"]))
@@ -480,9 +475,9 @@ elif page == "Prediction Demo":
             dt_label = pred_to_label(dt_model.predict(dt_input)[0], class_labels)
             nb_label = pred_to_label(nb_model.predict(nb_input)[0], class_labels)
 
-            if global_model_choice == "Decision Tree":
+            if model_choice == "Decision Tree":
                 show_prediction_card("Decision Tree", dt_label)
-            elif global_model_choice == "Naive Bayes":
+            elif model_choice == "Naive Bayes":
                 show_prediction_card("Naive Bayes", nb_label)
             else:
                 a, b = st.columns(2)
