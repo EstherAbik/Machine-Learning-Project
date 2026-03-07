@@ -239,12 +239,12 @@ with st.sidebar:
 )
 
 # ---------------------------------------------------
-# PAGE: Problem Statement
+# PAGE: Introduction
 # ---------------------------------------------------
 if page == "Introduction":
     st.markdown('<div class="main-header"><h1>Stress Trajectory Prediction</h1><p> A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
 
-    st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
+    st.write("**Goal:** To Predict whether a person is **At Risk** of growing stress.")
     st.write("**Problem Type:** Binary Classification")
     st.write("**Target Variable:** `Stress_Risk`")
     st.write("**Algorithms Used:** Naive Bayes and Decision Tree")
