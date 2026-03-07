@@ -372,8 +372,7 @@ elif page == "Model Performance":
 
     st.markdown("""
     <div class="info-card">
-        <strong>Why Recall Matters</strong><br><br>
-        This project prioritizes <strong>Recall</strong> because a false negative means an at-risk person may be missed.
+        This project prioritizes <strong>Recall</strong> to check model performance because a false negative means an at-risk person may be missed.
         In a mental health setting, that is more serious than a false positive, where someone simply receives an extra follow-up.
         For that reason, the final model is selected based primarily on its ability to catch as many at-risk individuals as possible.
     </div>
@@ -404,7 +403,7 @@ elif page == "Model Performance":
         fig.update_layout(barmode="group", height=420, yaxis=dict(range=[0, 1], tickformat=".0%"))
         st.plotly_chart(fig, use_container_width=True)
 
-        st.write("Best model based on Recall:", model_results.get("best_model", "Decision Tree"))
+        st.write("Best model based on Recall:", model_results.get("best_model", "**Decision Tree**"))
 
     st.markdown("""
     <div class="info-card">
