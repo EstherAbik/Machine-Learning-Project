@@ -96,17 +96,17 @@ st.markdown("""
         text-align: center;
     }
     div.stButton > button {
-    background-color: #1f77ff;
+    background-color: #2d5a87;
     color: white;
     font-weight: 600;
     border-radius: 10px;
     border: none;
     height: 3em;
     font-size: 16px;
-    }
+   }
 
     div.stButton > button:hover {
-    background-color: #155edb;
+    background-color: #1e3a5f;
     color: white;
     }
             
