@@ -320,34 +320,34 @@ elif page == "EDA & Insights":
             st.pyplot(fig)
             st.write("Insight: Mood_Swings, Days_Indoors, and Social_Weakness show meaningful association patterns with stress risk.")
         
-            if eda_section in ["Decision Tree Visualization", "Show All"]:
+        if eda_section in ["Decision Tree Visualization", "Show All"]:
 
-    st.markdown(
-        '<div class="section-header"><h2>Decision Tree Visualization</h2></div>',
-        unsafe_allow_html=True
-    )
+            st.markdown(
+                '<div class="section-header"><h2>Decision Tree Visualization</h2></div>',
+                unsafe_allow_html=True
+            )
 
-    if dt_model is None:
-        st.error("Decision Tree model not loaded.")
-    else:
+            if dt_model is None:
+                st.error("Decision Tree model not loaded.")
+            else:
 
-        depth = st.slider("Tree depth to display", 1, 6, 3)
+                depth = st.slider("Tree depth to display", 1, 6, 3)
 
-        fig, ax = plt.subplots(figsize=(20,8))
+                fig, ax = plt.subplots(figsize=(20,8))
 
-        plot_tree(
-            dt_model,
-            feature_names=dt_feature_columns,
-            class_names=model_results["class_labels"],
-            filled=True,
-            rounded=True,
-            max_depth=depth,
-            fontsize=9,
-            ax=ax,
-            impurity=False
-        )
+                plot_tree(
+                    dt_model,
+                    feature_names=dt_feature_columns,
+                    class_names=model_results["class_labels"],
+                    filled=True,
+                    rounded=True,
+                    max_depth=depth,
+                    fontsize=9,
+                    ax=ax,
+                    impurity=False
+                )
 
-        st.pyplot(fig)
+                st.pyplot(fig)
 # ---------------------------------------------------
 # PAGE: Preprocessing
 # ---------------------------------------------------
