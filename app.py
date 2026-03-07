@@ -233,7 +233,7 @@ with st.sidebar:
         "EDA",
         "Preprocessing",
         "Model Performance",
-        "Prediction Demo"
+        "Prediction"
     ],
     label_visibility="collapsed"
 )
@@ -258,7 +258,7 @@ if page == "Introduction":
 # PAGE: EDA
 # ---------------------------------------------------
 elif page == "EDA":
-    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>Choose which visualization section to view</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>', unsafe_allow_html=True)
 
     if df is None:
         st.error("Dataset not found.")
@@ -410,8 +410,8 @@ elif page == "Model Performance":
 # ---------------------------------------------------
 # PAGE: Prediction Demo
 # ---------------------------------------------------
-elif page == "Prediction Demo":
-    st.markdown('<div class="main-header"><h1>Prediction Demo</h1></div>', unsafe_allow_html=True)
+elif page == "Prediction":
+    st.markdown('<div class="main-header"><h1>Growing stress risk Prediction</h1></div>', unsafe_allow_html=True)
 
     if dt_model is None or nb_model is None or dt_encoders is None:
         st.error("Models or encoders not loaded.")
