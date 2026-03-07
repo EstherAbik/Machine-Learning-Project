@@ -229,7 +229,7 @@ with st.sidebar:
     page = st.radio(
         "Navigation",
         [
-            "Problem Statement",
+            "Introduction",
             "Dataset Overview",
             "EDA & Insights",
             "Preprocessing",
@@ -243,13 +243,17 @@ with st.sidebar:
 # ---------------------------------------------------
 # PAGE: Problem Statement
 # ---------------------------------------------------
-if page == "Problem Statement":
-    st.markdown('<div class="main-header"><h1>Stress Trajectory Prediction</h1><p>A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
+if page == "Introduction":
+    st.markdown('<div class="main-header"><h1>Introduction</h1><p>Stress Trajectory Prediction – A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
 
     st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
     st.write("**Problem Type:** Binary Classification")
     st.write("**Target Variable:** `Stress_Risk`")
     st.link_button("Open Dataset on Kaggle", DATASET_URL)
+    if df is not None:
+        st.markdown('<div class="section-header"><h2>Dataset Sample</h2></div>', unsafe_allow_html=True)
+        st.dataframe(df.head(10), use_container_width=True)
+
 
     st.markdown("""
     <div class="info-card">
@@ -360,6 +364,15 @@ elif page == "Preprocessing":
 # ---------------------------------------------------
 elif page == "Model Performance":
     st.markdown('<div class="main-header"><h1>Model Performance</h1></div>', unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="info-card">
+        <strong>Why Recall Matters</strong><br><br>
+        This project prioritizes <strong>Recall</strong> because a false negative means an at-risk person may be missed.
+        In a mental health setting, that is more serious than a false positive, where someone simply receives an extra follow-up.
+        For that reason, the final model is selected based primarily on its ability to catch as many at-risk individuals as possible.
+    </div>
+    """, unsafe_allow_html=True)
 
     if model_results is None:
         st.error("Model results not found.")
