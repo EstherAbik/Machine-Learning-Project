@@ -375,6 +375,14 @@ elif page == "Preprocessing":
 elif page == "Model Performance":
     st.markdown('<div class="main-header"><h1>Model Performance</h1></div>', unsafe_allow_html=True)
 
+    best_model = model_results.get("best_model", "Decision Tree")
+
+    st.markdown(f"""
+    <div class="info-card">
+    <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("""
     <div class="info-card">
         This project prioritizes Recall to check model performance because a false negative means an at-risk person may be missed.
@@ -408,13 +416,7 @@ elif page == "Model Performance":
         fig.update_layout(barmode="group", height=420, yaxis=dict(range=[0, 1], tickformat=".0%"))
         st.plotly_chart(fig, use_container_width=True)
 
-    best_model = model_results.get("best_model", "Decision Tree")
-
-    st.markdown(f"""
-    <div class="info-card">
-    <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
-    </div>
-    """, unsafe_allow_html=True)   
+       
 
     st.markdown("""
     <div class="info-card">
