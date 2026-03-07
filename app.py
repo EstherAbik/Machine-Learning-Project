@@ -354,7 +354,7 @@ elif page == "EDA":
                 plot_tree(
                     dt_model,
                     feature_names=dt_feature_columns,
-                    class_names=model_results["class_labels"],
+                    class_names=model_results.get("class_labels", ["At Risk", "Not At Risk"]),
                     filled=True,
                     rounded=True,
                     max_depth=depth,
@@ -364,6 +364,45 @@ elif page == "EDA":
                 )
 
                 st.pyplot(fig)
+
+                # -----------------------------------------
+                # FEATURE IMPORTANCE
+                # -----------------------------------------
+
+                st.markdown(
+                    '<div class="section-header"><h2>Feature Importance</h2></div>',
+                    unsafe_allow_html=True
+                )
+
+                importances = dt_model.feature_importances_
+
+                importance_df = pd.DataFrame({
+                    "Feature": dt_feature_columns,
+                    "Importance": importances
+                }).sort_values("Importance", ascending=False)
+
+                fig2 = go.Figure()
+
+                fig2.add_trace(go.Bar(
+                    x=importance_df["Importance"],
+                    y=importance_df["Feature"],
+                    orientation="h",
+                    marker_color="#2d5a87"
+                ))
+
+                fig2.update_layout(
+                    height=400,
+                    xaxis_title="Importance Score",
+                    yaxis_title="Feature",
+                    yaxis=dict(autorange="reversed"),
+                    title="Decision Tree Feature Importance"
+                )
+
+                st.plotly_chart(fig2, use_container_width=True)
+
+                st.write(
+                    "Insight: Features with higher importance contribute more to the model's prediction of stress risk."
+                )
 # ---------------------------------------------------
 # PAGE: Preprocessing
 # ---------------------------------------------------
