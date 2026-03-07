@@ -372,7 +372,7 @@ elif page == "Model Performance":
 
     st.markdown("""
     <div class="info-card">
-        This project prioritizes <strong>Recall</strong> to check model performance because a false negative means an at-risk person may be missed.
+        This project prioritizes Recall to check model performance because a false negative means an at-risk person may be missed.
         In a mental health setting, that is more serious than a false positive, where someone simply receives an extra follow-up.
         For that reason, the final model is selected based primarily on its ability to catch as many at-risk individuals as possible.
     </div>
