@@ -355,13 +355,18 @@ elif page == "EDA":
 elif page == "Preprocessing":
     st.markdown('<div class="main-header"><h1>Data Cleaning & Preprocessing</h1></div>', unsafe_allow_html=True)
     st.write("""
-- Removed `Maybe` responses from the target
-- Dropped unnecessary columns like `Timestamp`, `Growing_Stress`, and `Country` if present
-- Filled missing values with mode
-- Removed duplicates
-- Label encoded categorical variables
-- Selected 8 final features
-- Split the data into train and test sets
+
+- **Removed irrelevant columns:** The `Timestamp` column was dropped because it does not contribute to predicting stress risk.
+
+- **Prepared target variable:** The original `Growing_Stress` variable was converted into a binary target `Stress_Risk`  
+  (**Yes → At Risk**, **No → Not At Risk**).  
+  Responses labeled **“Maybe” were removed** to create a clear classification task.
+
+- **Encoded categorical features:** Variables such as `Mood_Swings`, `Occupation`, and `Social_Weakness` were converted into numerical form using **Label Encoding** so they could be used by the machine learning models.
+
+- **Train-test split:** The dataset was divided into **80% training data and 20% testing data** using stratified sampling.
+
+- **Scaling and balancing:** Feature scaling and additional balancing techniques were not required because the selected models (**Decision Tree and Categorical Naive Bayes**) work effectively with encoded categorical features and the dataset remained reasonably balanced after removing “Maybe”.
 """)
 
 # ---------------------------------------------------
@@ -403,7 +408,11 @@ elif page == "Model Performance":
         fig.update_layout(barmode="group", height=420, yaxis=dict(range=[0, 1], tickformat=".0%"))
         st.plotly_chart(fig, use_container_width=True)
 
-        st.write("Best model based on Recall:", model_results.get("best_model", "<strong>Decision Tree</strong>"))
+        st.markdown(f"""
+        <div class="info-card">
+        <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="info-card">
