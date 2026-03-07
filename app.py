@@ -408,11 +408,13 @@ elif page == "Model Performance":
         fig.update_layout(barmode="group", height=420, yaxis=dict(range=[0, 1], tickformat=".0%"))
         st.plotly_chart(fig, use_container_width=True)
 
+    best_model = model_results.get("best_model", "Decision Tree")
+
     st.markdown(f"""
-        <div class="info-card">
-        <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
-        </div>
-        """, unsafe_allow_html=True)   
+    <div class="info-card">
+    <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
+    </div>
+    """, unsafe_allow_html=True)   
 
     st.markdown("""
     <div class="info-card">
