@@ -406,6 +406,26 @@ elif page == "Model Performance":
 
         st.write("Best model based on Recall:", model_results.get("best_model", "Decision Tree"))
 
+    st.markdown("""
+    <div class="info-card">
+    <strong>Why Naive Bayes Performed Worse</strong><br><br>
+
+    Naive Bayes assumes that all features are <strong>independent</strong> from one another.
+    However, in this dataset several variables are related.
+
+    For example:
+    • Mood swings may influence changes in habits  
+    • Time spent indoors can relate to social weakness  
+    • Mental health history may influence work interest  
+
+    Because these variables are not truly independent, the Naive Bayes assumption is violated,
+    which can reduce model accuracy.
+
+    Decision Trees do not rely on this assumption and can naturally model relationships between
+    features, which explains their stronger performance on this dataset.
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------
 # PAGE: Prediction Demo
