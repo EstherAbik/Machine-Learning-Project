@@ -242,7 +242,7 @@ with st.sidebar:
 # PAGE: Problem Statement
 # ---------------------------------------------------
 if page == "Introduction":
-    st.markdown('<div class="main-header"><h1>Introduction</h1><p>Stress Trajectory Prediction – A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1>Stress Trajectory Prediction</h1><p> A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
 
     st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
     st.write("**Problem Type:** Binary Classification")
