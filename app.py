@@ -366,7 +366,7 @@ elif page == "Preprocessing":
 
 - **Train-test split:** The dataset was divided into **80% training data and 20% testing data** using stratified sampling.
 
-- **Scaling and balancing:** Feature scaling and additional balancing techniques were not required because the selected models (**Decision Tree and Categorical Naive Bayes**) work effectively with encoded categorical features and the dataset remained reasonably balanced after removing “Maybe”.
+             
 """)
 
 # ---------------------------------------------------
