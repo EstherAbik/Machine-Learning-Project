@@ -1,14 +1,15 @@
 """
 Stress Trajectory Prediction - Mental Health Analysis Platform
 
-Updated features:
-- Introduction page instead of Problem Statement
-- Dataset sample shown in Introduction
-- No separate Dataset Overview page
-- Why Recall Matters shown only under Model Performance
-- Decision Tree visualization moved under EDA & Insights
-- EDA uses tabs like a dashboard
-- Model choice appears only in Prediction Demo
+Features:
+- Dataset link
+- EDA section picker
+- Correlation heatmap
+- Decision tree visualization
+- Feature importance
+- Model comparison
+- Prediction demo
+- Model choice only inside Prediction Demo
 """
 
 import streamlit as st
@@ -179,23 +180,7 @@ def stacked_plot(eda_df, feature, title, order=None):
     if order is not None:
         ct = ct.reindex([x for x in order if x in ct.index])
 
-    
-        best_model = model_results.get("best_model", "Decision Tree")
-
-        if best_model == "Decision Tree":
-            best_recall = model_results.get("dt_recall", 0)
-            best_f1 = model_results.get("dt_f1", 0)
-        else:
-            best_recall = model_results.get("nb_recall", 0)
-            best_f1 = model_results.get("nb_f1", 0)
-
-        k1, k2, k3 = st.columns(3)
-        k1.metric("Selected Model", best_model)
-        k2.metric("Best Recall", f"{best_recall:.1%}")
-        k3.metric("Best F1", f"{best_f1:.1%}")
-
-
-        fig = go.Figure()
+    fig = go.Figure()
     if "Not At Risk" in ct.columns:
         fig.add_trace(go.Bar(
             name="Not At Risk",
@@ -242,75 +227,58 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     page = st.radio(
-        "Navigation",
-        [
-            "Introduction",
-            "EDA & Insights",
-            "Preprocessing",
-            "Model Performance",
-            "Prediction Demo"
-        ],
-        label_visibility="collapsed"
-    )
+    "Navigation",
+    [
+        "Introduction",
+        "EDA & Insights",
+        "Preprocessing",
+        "Model Performance",
+        "Decision Tree Visualization",
+        "Prediction Demo"
+    ],
+    label_visibility="collapsed"
+)
 
 # ---------------------------------------------------
-# PAGE: Introduction
+# PAGE: Problem Statement
 # ---------------------------------------------------
 if page == "Introduction":
     st.markdown('<div class="main-header"><h1>Introduction</h1><p>Stress Trajectory Prediction – A Machine Learning Approach to Mental Health Risk Assessment</p></div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1.05, 1])
+    st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
+    st.write("**Problem Type:** Binary Classification")
+    st.write("**Target Variable:** `Stress_Risk`")
+    st.link_button("Open Dataset on Kaggle", DATASET_URL)
+    if df is not None:
+        st.markdown('<div class="section-header"><h2>Dataset Sample</h2></div>', unsafe_allow_html=True)
+        st.dataframe(df.head(10), use_container_width=True)
 
-    with col1:
-        st.write("**Goal:** Predict whether a person is **At Risk** of growing stress.")
-        st.write("**Problem Type:** Binary Classification")
-        st.write("**Target Variable:** `Stress_Risk`")
-        st.link_button("Open Dataset on Kaggle", DATASET_URL)
-
-        st.markdown("""
-        <div class="info-card">
-            <strong>Project overview:</strong><br><br>
-            This project uses behavioral and lifestyle factors such as mood swings, time spent indoors,
-            social weakness, and work interest to estimate stress risk.
-            The task is treated as a binary classification problem after removing ambiguous
-            <strong>"Maybe"</strong> responses from the target.
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="info-card">
-            <strong>💡 Why This Matters for Mental Health</strong><br><br>
-            🔹 <strong>Stress</strong> is a major risk factor linked to anxiety and depression.
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        if df is not None:
-            st.markdown('<div class="section-header"><h2>Dataset Sample</h2></div>', unsafe_allow_html=True)
-            st.dataframe(df.head(10), use_container_width=True)
 
 # ---------------------------------------------------
 # PAGE: EDA
 # ---------------------------------------------------
 elif page == "EDA & Insights":
-    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>Interactive dashboard for data insights and model visualization</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>Choose which visualization section to view</p></div>', unsafe_allow_html=True)
 
     if df is None:
         st.error("Dataset not found.")
     else:
         eda_df = prepare_eda_df(df)
 
-        tabs = st.tabs([
-            "Stress Risk Distribution",
-            "Mood Swings",
-            "Days Indoors",
-            "Social Weakness",
-            "Occupation",
-            "Correlation Heatmap",
-            "Decision Tree Visualization"
-        ])
+        eda_section = st.selectbox(
+            "Pick visualization section",
+            [
+                "Stress Risk Distribution",
+                "Mood Swings Analysis",
+                "Days Indoors Analysis",
+                "Social Weakness Analysis",
+                "Occupation Analysis",
+                "Correlation Heatmap",
+                "Show All"
+            ]
+        )
 
-        with tabs[0]:
+        if eda_section in ["Stress Risk Distribution", "Show All"]:
             st.markdown('<div class="section-header"><h2>Stress Risk Distribution</h2></div>', unsafe_allow_html=True)
             counts = eda_df["Stress_Risk"].value_counts()
             fig = go.Figure(data=[go.Pie(labels=counts.index, values=counts.values, hole=0.55, textinfo="percent+label")])
@@ -318,27 +286,27 @@ elif page == "EDA & Insights":
             st.plotly_chart(fig, use_container_width=True)
             st.write("Insight: After removing `Maybe`, the problem becomes a clean binary classification task.")
 
-        with tabs[1]:
+        if eda_section in ["Mood Swings Analysis", "Show All"]:
             st.markdown('<div class="section-header"><h2>Mood Swings Analysis</h2></div>', unsafe_allow_html=True)
             stacked_plot(eda_df, "Mood_Swings", "Stress Risk by Mood Swings", ["Low", "Medium", "High"])
             st.write("Insight: Higher mood swings are associated with higher stress risk.")
 
-        with tabs[2]:
+        if eda_section in ["Days Indoors Analysis", "Show All"]:
             st.markdown('<div class="section-header"><h2>Days Indoors Analysis</h2></div>', unsafe_allow_html=True)
             stacked_plot(eda_df, "Days_Indoors", "Stress Risk by Days Indoors", ["Go out Every day", "1-14 days", "15-30 days", "31-60 days", "More than 2 months"])
             st.write("Insight: More time indoors appears linked with higher stress risk.")
 
-        with tabs[3]:
+        if eda_section in ["Social Weakness Analysis", "Show All"]:
             st.markdown('<div class="section-header"><h2>Social Weakness Analysis</h2></div>', unsafe_allow_html=True)
             stacked_plot(eda_df, "Social_Weakness", "Stress Risk by Social Weakness", ["No", "Maybe", "Yes"])
             st.write("Insight: Social weakness is associated with a higher share of at-risk cases.")
 
-        with tabs[4]:
+        if eda_section in ["Occupation Analysis", "Show All"]:
             st.markdown('<div class="section-header"><h2>Occupation Analysis</h2></div>', unsafe_allow_html=True)
             stacked_plot(eda_df, "Occupation", "Stress Risk by Occupation")
             st.write("Insight: Different occupation groups show different stress-risk patterns.")
 
-        with tabs[5]:
+        if eda_section in ["Correlation Heatmap", "Show All"]:
             st.markdown('<div class="section-header"><h2>Correlation Heatmap</h2></div>', unsafe_allow_html=True)
             corr_df = eda_df.drop(columns=["Timestamp", "Growing_Stress"], errors="ignore").copy()
             for col in corr_df.columns:
@@ -351,41 +319,6 @@ elif page == "EDA & Insights":
             ax.set_title("Feature Correlation Heatmap")
             st.pyplot(fig)
             st.write("Insight: Mood_Swings, Days_Indoors, and Social_Weakness show meaningful association patterns with stress risk.")
-
-        with tabs[6]:
-            st.markdown('<div class="section-header"><h2>Decision Tree Visualization</h2></div>', unsafe_allow_html=True)
-
-            if dt_model is None:
-                st.error("Decision Tree model not loaded.")
-            else:
-                st.markdown('<div class="section-header"><h2>Feature Importance</h2></div>', unsafe_allow_html=True)
-                fi = getattr(dt_model, "feature_importances_", None)
-                if fi is not None and dt_feature_columns is not None:
-                    fi_df = pd.DataFrame({"Feature": dt_feature_columns, "Importance": fi}).sort_values("Importance", ascending=True)
-                    fig = go.Figure(go.Bar(
-                        x=fi_df["Importance"],
-                        y=fi_df["Feature"],
-                        orientation="h",
-                        text=[f"{v:.3f}" for v in fi_df["Importance"]],
-                        textposition="outside"
-                    ))
-                    fig.update_layout(height=420, title="Decision Tree Feature Importance")
-                    st.plotly_chart(fig, use_container_width=True)
-
-                depth = st.slider("Tree depth to display", 1, 6, 3)
-                fig, ax = plt.subplots(figsize=(20, 8))
-                plot_tree(
-                    dt_model,
-                    feature_names=dt_feature_columns,
-                    class_names=model_results.get("class_labels", ["At Risk", "Not At Risk"]),
-                    filled=True,
-                    rounded=True,
-                    max_depth=depth,
-                    fontsize=9,
-                    ax=ax,
-                    impurity=False
-                )
-                st.pyplot(fig)
 
 # ---------------------------------------------------
 # PAGE: Preprocessing
@@ -442,35 +375,46 @@ elif page == "Model Performance":
         fig.update_layout(barmode="group", height=420, yaxis=dict(range=[0, 1], tickformat=".0%"))
         st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("""
-        <div class="info-card">
-            <strong>Model selection summary:</strong><br><br>
-            The final model is chosen based on the highest <strong>Recall</strong>.
-            This ensures the app prioritizes catching more truly at-risk individuals, even if that means allowing some extra false positives.
-        </div>
-        """, unsafe_allow_html=True)
-
         st.write("Best model based on Recall:", model_results.get("best_model", "Decision Tree"))
 
-        st.markdown('<div class="section-header"><h2>Confusion Matrices</h2></div>', unsafe_allow_html=True)
+# ---------------------------------------------------
+# PAGE: Decision Tree Visualization
+# ---------------------------------------------------
+elif page == "Decision Tree Visualization":
+    st.markdown('<div class="main-header"><h1>Decision Tree Visualization</h1></div>', unsafe_allow_html=True)
 
-        dt_cm = model_results.get("dt_cm", [[0,0],[0,0]])
-        nb_cm = model_results.get("nb_cm", [[0,0],[0,0]])
+    if dt_model is None:
+        st.error("Decision Tree model not loaded.")
+    else:
+        st.markdown('<div class="section-header"><h2>Feature Importance</h2></div>', unsafe_allow_html=True)
+        fi = getattr(dt_model, "feature_importances_", None)
+        if fi is not None and dt_feature_columns is not None:
+            fi_df = pd.DataFrame({"Feature": dt_feature_columns, "Importance": fi}).sort_values("Importance", ascending=True)
+            fig = go.Figure(go.Bar(
+                x=fi_df["Importance"],
+                y=fi_df["Feature"],
+                orientation="h",
+                text=[f"{v:.3f}" for v in fi_df["Importance"]],
+                textposition="outside"
+            ))
+            fig.update_layout(height=420, title="Decision Tree Feature Importance")
+            st.plotly_chart(fig, use_container_width=True)
 
-        c1, c2 = st.columns(2)
-
-        with c1:
-            fig_dt, ax_dt = plt.subplots(figsize=(5,4))
-            sns.heatmap(dt_cm, annot=True, fmt="d", cmap="Blues", cbar=False, ax=ax_dt)
-            ax_dt.set_title("Decision Tree")
-            st.pyplot(fig_dt)
-
-        with c2:
-            fig_nb, ax_nb = plt.subplots(figsize=(5,4))
-            sns.heatmap(nb_cm, annot=True, fmt="d", cmap="Greens", cbar=False, ax=ax_nb)
-            ax_nb.set_title("Naive Bayes")
-            st.pyplot(fig_nb)
-
+        st.markdown('<div class="section-header"><h2>Tree Structure</h2></div>', unsafe_allow_html=True)
+        depth = st.slider("Max depth to display", 1, 6, 3)
+        fig, ax = plt.subplots(figsize=(20, 8))
+        plot_tree(
+            dt_model,
+            feature_names=dt_feature_columns,
+            class_names=model_results.get("class_labels", ["At Risk", "Not At Risk"]),
+            filled=True,
+            rounded=True,
+            max_depth=depth,
+            fontsize=9,
+            ax=ax,
+            impurity=False
+        )
+        st.pyplot(fig)
 
 # ---------------------------------------------------
 # PAGE: Prediction Demo
