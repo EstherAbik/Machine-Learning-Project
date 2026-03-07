@@ -254,15 +254,6 @@ if page == "Introduction":
         st.markdown('<div class="section-header"><h2>Dataset Sample</h2></div>', unsafe_allow_html=True)
         st.dataframe(df.head(10), use_container_width=True)
 
-
-    st.markdown("""
-    <div class="info-card">
-        <strong>Why Recall matters:</strong><br><br>
-        In mental health screening, missing someone who may need support is worse than triggering an extra check-in.
-        The project therefore prioritizes <strong>Recall</strong>.
-    </div>
-    """, unsafe_allow_html=True)
-
 # ---------------------------------------------------
 # PAGE: Dataset Overview
 # ---------------------------------------------------
