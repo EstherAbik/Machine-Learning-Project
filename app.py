@@ -379,10 +379,10 @@ elif page == "Model Performance":
 
     st.markdown(f"""
     <div class="info-card">
-    <strong>Best Model Based on Recall:</strong> <strong>{best_model}</strong>
+    <strong>Model Selected Based on Recall:</strong> <strong>{best_model}</strong>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("""
     <div class="info-card">
         This project prioritizes Recall to check model performance because a false negative means an at-risk person may be missed.
