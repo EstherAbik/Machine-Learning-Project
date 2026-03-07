@@ -95,6 +95,21 @@ st.markdown("""
         padding: 1.4rem;
         text-align: center;
     }
+    div.stButton > button {
+    background-color: #1f77ff;
+    color: white;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    height: 3em;
+    font-size: 16px;
+    }
+
+    div.stButton > button:hover {
+    background-color: #155edb;
+    color: white;
+    }
+            
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -258,7 +273,7 @@ if page == "Introduction":
 # PAGE: EDA
 # ---------------------------------------------------
 elif page == "EDA":
-    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1>Exploratory Data Analysis</h1><p></p></div>', unsafe_allow_html=True)
 
     if df is None:
         st.error("Dataset not found.")
