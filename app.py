@@ -21,6 +21,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 from pathlib import Path
+from sklearn.metrics import confusion_matrix
 
 # ---------------------------------------------------
 # CONFIG
@@ -403,6 +404,36 @@ elif page == "EDA":
                 st.write(
                     "Insight: Features with higher importance contribute more to the model's prediction of stress risk."
                 )
+                st.markdown(
+                    '<div class="section-header"><h2>Decision Tree Confusion Matrix</h2></div>',
+                    unsafe_allow_html=True
+                )
+
+                cm = model_results.get("dt_cm")
+
+                if cm is not None:
+
+                    fig_cm, ax = plt.subplots(figsize=(6,5))
+
+                    sns.heatmap(
+                        cm,
+                        annot=True,
+                        fmt="d",
+                        cmap="Blues",
+                        xticklabels=["Not At Risk", "At Risk"],
+                        yticklabels=["Not At Risk", "At Risk"],
+                        ax=ax
+                    )
+
+                    ax.set_xlabel("Predicted")
+                    ax.set_ylabel("Actual")
+                    ax.set_title("Decision Tree Confusion Matrix")
+
+                    st.pyplot(fig_cm)
+
+                    st.write(
+                        "Insight: The confusion matrix shows how many at-risk individuals were correctly identified versus missed."
+                    )
 # ---------------------------------------------------
 # PAGE: Preprocessing
 # ---------------------------------------------------
