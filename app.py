@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 from pathlib import Path
 from sklearn.metrics import confusion_matrix
-
+from sklearn.tree import _tree
 # ---------------------------------------------------
 # CONFIG
 # ---------------------------------------------------
