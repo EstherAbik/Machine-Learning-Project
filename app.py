@@ -225,6 +225,7 @@ def stacked_plot(eda_df, feature, title, order=None):
     st.plotly_chart(fig, use_container_width=True)
 
     from sklearn.tree import _tree
+    import numpy as np
 
 def _get_class_list_from_encoder(encoder):
     if hasattr(encoder, "classes_"):
@@ -234,11 +235,6 @@ def _get_class_list_from_encoder(encoder):
     return []
 
 def _decode_single_condition(feature, operator, threshold, encoders):
-    """
-    Convert a numeric tree split like:
-        Changes_Habits <= 0.5
-    into a more readable categorical version using the saved encoders.
-    """
     if feature not in encoders:
         return f"{feature} {operator} {threshold:.1f}"
 
@@ -246,11 +242,6 @@ def _decode_single_condition(feature, operator, threshold, encoders):
     if not classes:
         return f"{feature} {operator} {threshold:.1f}"
 
-    # Tree thresholds for label-encoded categories are usually x.5
-    # Example:
-    # 0 = No, 1 = Yes, threshold 0.5 means:
-    # left  -> code <= 0.5 -> "No"
-    # right -> code > 0.5  -> "Yes"
     split_idx = int(np.floor(threshold))
 
     if operator == "<=":
@@ -268,15 +259,17 @@ def _decode_single_condition(feature, operator, threshold, encoders):
     return f"{feature} {operator} {threshold:.1f}"
 
 def get_top_decision_rules_readable(tree_model, feature_names, encoders, class_labels, max_rules=5):
-    """
-    Extract top leaf rules from a decision tree and convert encoded numeric splits
-    into human-readable categorical rules.
-    """
     tree_ = tree_model.tree_
-    feature_name = [
-        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined"
-        for i in tree_.feature
-    ]
+    feature_names = list(feature_names)
+
+    feature_name = []
+    for idx in tree_.feature:
+        if idx == _tree.TREE_UNDEFINED:
+            feature_name.append("undefined")
+        elif 0 <= idx < len(feature_names):
+            feature_name.append(feature_names[idx])
+        else:
+            feature_name.append(f"feature_{idx}")
 
     rules = []
 
@@ -297,8 +290,6 @@ def get_top_decision_rules_readable(tree_model, feature_names, encoders, class_l
             rules.append((" AND ".join(path), predicted_class, samples))
 
     recurse(0, [])
-
-    # show biggest / most common rules first
     rules = sorted(rules, key=lambda x: x[2], reverse=True)
     return rules[:max_rules]
 
@@ -461,11 +452,11 @@ elif page == "EDA":
                 )
 
                 rules = get_top_decision_rules_readable(
-                    dt_model,
-                    list(dt_feature_columns),
-                    dt_encoders,
-                    model_results.get("class_labels", ["At Risk", "Not At Risk"]),
-                    max_rules=5
+                dt_model,
+                dt_feature_columns,
+                dt_encoders,
+                model_results.get("class_labels", ["At Risk", "Not At Risk"]),
+                max_rules=5
                 )
 
                 st.write(
