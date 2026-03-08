@@ -224,96 +224,7 @@ def stacked_plot(eda_df, feature, title, order=None):
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    from sklearn.tree import _tree
-    import numpy as np
-
-def _get_class_list_from_encoder(encoder):
-    if hasattr(encoder, "classes_"):
-        return list(encoder.classes_)
-    if isinstance(encoder, dict):
-        return list(encoder.keys())
-    return []
-
-def _allowed_categories_from_bounds(classes, low_idx, high_idx):
-    low_idx = max(0, low_idx)
-    high_idx = min(len(classes) - 1, high_idx)
-    if low_idx > high_idx:
-        return []
-    return classes[low_idx:high_idx + 1]
-
-def get_top_decision_rules_simplified(tree_model, feature_names, encoders, class_labels, max_rules=5):
-    """
-    Build readable rules by merging repeated tree splits on the same feature.
-    This turns messy paths into cleaner rules like:
-    Work_Interest = Maybe
-    instead of:
-    Work_Interest in ['Maybe','No'] AND Work_Interest = Maybe
-    """
-    tree_ = tree_model.tree_
-    feature_names = list(feature_names)
-
-    def recurse(node, bounds):
-        if tree_.feature[node] != _tree.TREE_UNDEFINED:
-            feat_idx = tree_.feature[node]
-            feat_name = feature_names[feat_idx]
-            threshold = tree_.threshold[node]
-
-            current_low, current_high = bounds.get(feat_name, (-10**9, 10**9))
-
-            # Left child: value <= threshold
-            left_bounds = bounds.copy()
-            left_bounds[feat_name] = (current_low, min(current_high, int(np.floor(threshold))))
-
-            # Right child: value > threshold
-            right_bounds = bounds.copy()
-            right_bounds[feat_name] = (max(current_low, int(np.floor(threshold)) + 1), current_high)
-
-            recurse(tree_.children_left[node], left_bounds)
-            recurse(tree_.children_right[node], right_bounds)
-
-        else:
-            class_idx = tree_.value[node][0].argmax()
-            predicted_class = class_labels[class_idx]
-            samples = tree_.n_node_samples[node]
-
-            readable_parts = []
-            for feat_name, (low_idx, high_idx) in bounds.items():
-                if feat_name in encoders:
-                    classes = _get_class_list_from_encoder(encoders[feat_name])
-                    if classes:
-                        allowed = _allowed_categories_from_bounds(classes, low_idx, high_idx)
-                        if len(allowed) == 1:
-                            readable_parts.append(f"{feat_name} = {allowed[0]}")
-                        elif len(allowed) > 1 and len(allowed) < len(classes):
-                            readable_parts.append(f"{feat_name} in {allowed}")
-                        elif len(allowed) == len(classes):
-                            continue
-                        else:
-                            continue
-                    else:
-                        readable_parts.append(f"{feat_name} encoded in [{low_idx}, {high_idx}]")
-                else:
-                    readable_parts.append(f"{feat_name} encoded in [{low_idx}, {high_idx}]")
-
-            rule_text = " AND ".join(readable_parts) if readable_parts else "Always"
-            collected_rules.append((rule_text, predicted_class, samples))
-
-    collected_rules = []
-    recurse(0, {})
-
-    # Sort by most common rules first
-    collected_rules = sorted(collected_rules, key=lambda x: x[2], reverse=True)
-
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_rules = []
-    for rule in collected_rules:
-        key = (rule[0], rule[1])
-        if key not in seen:
-            seen.add(key)
-            unique_rules.append(rule)
-
-    return unique_rules[:max_rules]
+    
 # ---------------------------------------------------
 # LOAD
 # ---------------------------------------------------
@@ -464,39 +375,7 @@ elif page == "EDA":
                     "**At Risk** or **Not At Risk** based on a sequence of feature-based decisions."
                 )
 
-                # -----------------------------------------
-                # TOP DECISION RULES (SIMPLIFIED)
-                # -----------------------------------------
-                st.markdown(
-                    '<div class="section-header"><h2>Top Decision Rules</h2></div>',
-                    unsafe_allow_html=True
-                )
-
-                rules = get_top_decision_rules_simplified(
-                    dt_model,
-                    dt_feature_columns,
-                    dt_encoders,
-                    model_results.get("class_labels", ["At Risk", "Not At Risk"]),
-                    max_rules=5
-                )
-
-                st.write(
-                    "These are simplified decision paths learned by the model. "
-                    "Repeated conditions have been merged to make the rules easier to interpret."
-                )
-
-                for i, (rule, pred, samples) in enumerate(rules, 1):
-                    st.markdown(
-                        f"""
-                        <div class="info-card">
-                            <strong>Rule {i}</strong><br><br>
-                            If <strong>{rule}</strong><br>
-                            → Predict <strong>{pred}</strong><br>
-                            <em>Samples covered: {samples}</em>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                
 
                 # -----------------------------------------
                 # FEATURE IMPORTANCE
