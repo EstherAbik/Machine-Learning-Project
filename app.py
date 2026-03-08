@@ -224,6 +224,84 @@ def stacked_plot(eda_df, feature, title, order=None):
     )
     st.plotly_chart(fig, use_container_width=True)
 
+    from sklearn.tree import _tree
+
+def _get_class_list_from_encoder(encoder):
+    if hasattr(encoder, "classes_"):
+        return list(encoder.classes_)
+    if isinstance(encoder, dict):
+        return list(encoder.keys())
+    return []
+
+def _decode_single_condition(feature, operator, threshold, encoders):
+    """
+    Convert a numeric tree split like:
+        Changes_Habits <= 0.5
+    into a more readable categorical version using the saved encoders.
+    """
+    if feature not in encoders:
+        return f"{feature} {operator} {threshold:.1f}"
+
+    classes = _get_class_list_from_encoder(encoders[feature])
+    if not classes:
+        return f"{feature} {operator} {threshold:.1f}"
+
+    # Tree thresholds for label-encoded categories are usually x.5
+    # Example:
+    # 0 = No, 1 = Yes, threshold 0.5 means:
+    # left  -> code <= 0.5 -> "No"
+    # right -> code > 0.5  -> "Yes"
+    split_idx = int(np.floor(threshold))
+
+    if operator == "<=":
+        left_classes = classes[:split_idx + 1]
+        if len(left_classes) == 1:
+            return f"{feature} = {left_classes[0]}"
+        return f"{feature} in {left_classes}"
+
+    if operator == ">":
+        right_classes = classes[split_idx + 1:]
+        if len(right_classes) == 1:
+            return f"{feature} = {right_classes[0]}"
+        return f"{feature} in {right_classes}"
+
+    return f"{feature} {operator} {threshold:.1f}"
+
+def get_top_decision_rules_readable(tree_model, feature_names, encoders, class_labels, max_rules=5):
+    """
+    Extract top leaf rules from a decision tree and convert encoded numeric splits
+    into human-readable categorical rules.
+    """
+    tree_ = tree_model.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined"
+        for i in tree_.feature
+    ]
+
+    rules = []
+
+    def recurse(node, path):
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+
+            left_rule = _decode_single_condition(name, "<=", threshold, encoders)
+            right_rule = _decode_single_condition(name, ">", threshold, encoders)
+
+            recurse(tree_.children_left[node], path + [left_rule])
+            recurse(tree_.children_right[node], path + [right_rule])
+        else:
+            class_idx = tree_.value[node][0].argmax()
+            predicted_class = class_labels[class_idx]
+            samples = tree_.n_node_samples[node]
+            rules.append((" AND ".join(path), predicted_class, samples))
+
+    recurse(0, [])
+
+    # show biggest / most common rules first
+    rules = sorted(rules, key=lambda x: x[2], reverse=True)
+    return rules[:max_rules]
+
 # ---------------------------------------------------
 # LOAD
 # ---------------------------------------------------
@@ -348,9 +426,12 @@ elif page == "EDA":
                 st.error("Decision Tree model not loaded.")
             else:
 
+                # -----------------------------------------
+                # TREE PLOT
+                # -----------------------------------------
                 depth = st.slider("Tree depth to display", 1, 6, 3)
 
-                fig, ax = plt.subplots(figsize=(20,8))
+                fig, ax = plt.subplots(figsize=(20, 8))
 
                 plot_tree(
                     dt_model,
@@ -366,10 +447,59 @@ elif page == "EDA":
 
                 st.pyplot(fig)
 
+                st.write(
+                    "This visualization shows how the Decision Tree classifies a person as "
+                    "**At Risk** or **Not At Risk** based on a sequence of feature-based decisions."
+                )
+
+                # -----------------------------------------
+                # TOP DECISION RULES (READABLE)
+                # -----------------------------------------
+                st.markdown(
+                    '<div class="section-header"><h2>Top Decision Rules</h2></div>',
+                    unsafe_allow_html=True
+                )
+
+                rules = get_top_decision_rules_readable(
+                    dt_model,
+                    list(dt_feature_columns),
+                    dt_encoders,
+                    model_results.get("class_labels", ["At Risk", "Not At Risk"]),
+                    max_rules=5
+                )
+
+                st.write(
+                    "These are the most common decision paths learned by the model, shown in a more human-readable way."
+                )
+
+                for i, (rule, pred, samples) in enumerate(rules, 1):
+                    st.markdown(
+                        f"""
+                        <div class="info-card">
+                            <strong>Rule {i}</strong><br><br>
+                            If <strong>{rule}</strong><br>
+                            → Predict <strong>{pred}</strong><br>
+                            <em>Samples covered: {samples}</em>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                st.markdown(
+                    """
+                    <div class="info-card">
+                        <strong>How to read these rules:</strong><br><br>
+                        Each rule shows one path from the top of the tree to a final prediction.
+                        Rules with larger sample counts apply to more people in the dataset.
+                        This makes the Decision Tree easier to interpret than many black-box models.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
                 # -----------------------------------------
                 # FEATURE IMPORTANCE
                 # -----------------------------------------
-
                 st.markdown(
                     '<div class="section-header"><h2>Feature Importance</h2></div>',
                     unsafe_allow_html=True
@@ -404,6 +534,10 @@ elif page == "EDA":
                 st.write(
                     "Insight: Features with higher importance contribute more to the model's prediction of stress risk."
                 )
+
+                # -----------------------------------------
+                # CONFUSION MATRIX
+                # -----------------------------------------
                 st.markdown(
                     '<div class="section-header"><h2>Decision Tree Confusion Matrix</h2></div>',
                     unsafe_allow_html=True
@@ -412,8 +546,7 @@ elif page == "EDA":
                 cm = model_results.get("dt_cm")
 
                 if cm is not None:
-
-                    fig_cm, ax = plt.subplots(figsize=(6,5))
+                    fig_cm, ax_cm = plt.subplots(figsize=(6, 5))
 
                     sns.heatmap(
                         cm,
@@ -422,18 +555,20 @@ elif page == "EDA":
                         cmap="Blues",
                         xticklabels=["Not At Risk", "At Risk"],
                         yticklabels=["Not At Risk", "At Risk"],
-                        ax=ax
+                        ax=ax_cm
                     )
 
-                    ax.set_xlabel("Predicted")
-                    ax.set_ylabel("Actual")
-                    ax.set_title("Decision Tree Confusion Matrix")
+                    ax_cm.set_xlabel("Predicted")
+                    ax_cm.set_ylabel("Actual")
+                    ax_cm.set_title("Decision Tree Confusion Matrix")
 
                     st.pyplot(fig_cm)
 
                     st.write(
                         "Insight: The confusion matrix shows how many at-risk individuals were correctly identified versus missed."
                     )
+
+        
 # ---------------------------------------------------
 # PAGE: Preprocessing
 # ---------------------------------------------------
