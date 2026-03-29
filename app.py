@@ -76,18 +76,19 @@ st.markdown("""
         font-size: 1.3rem;
     }
     .info-card {
-        /* Deep, dark blue-grey background that is easy on the eyes */
-        background: #1e293b; 
+        /* A soft, deep blue-grey gradient (resembles a night sky) */
+        background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
     
-        /* Bright, vibrant blue border for high contrast/visibility */
-        border-left-color: #38bdf8; 
+        /* A soft pastel blue border (muted, not neon) */
+        border-left: 4px solid #93c5fd; 
     
-        /* Light text color (crucial for dark mode) */
+        /* Soft off-white text to reduce eye strain compared to pure white */
         color: #f1f5f9; 
 
         border-radius: 12px;
         padding: 1rem 1.1rem;
         margin: 0.8rem 0;
+    }
     }
     .prediction-at-risk {
         background: #fff5f5;
