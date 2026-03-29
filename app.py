@@ -76,10 +76,17 @@ st.markdown("""
         font-size: 1.3rem;
     }
     .info-card {
-        background: linear-gradient(145deg, #e8f4fd 0%, #d4e8f7 100%);
+        /* Deep, dark blue-grey background that is easy on the eyes */
+        background: #1e293b; 
+    
+        /* Bright, vibrant blue border for high contrast/visibility */
+        border-left-color: #38bdf8; 
+    
+        /* Light text color (crucial for dark mode) */
+        color: #f1f5f9; 
+
         border-radius: 12px;
         padding: 1rem 1.1rem;
-        border-left: 4px solid #2d5a87;
         margin: 0.8rem 0;
     }
     .prediction-at-risk {
