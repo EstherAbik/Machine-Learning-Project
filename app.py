@@ -76,19 +76,18 @@ st.markdown("""
         font-size: 1.3rem;
     }
     .info-card {
-        /* A soft, deep blue-grey gradient (resembles a night sky) */
-        background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+        /* Your preferred background: Very light grey to pure white */
+        background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
     
-        /* A soft pastel blue border (muted, not neon) */
-        border-left: 4px solid #93c5fd; 
+        /* Your preferred blue for the left border */
+        border-left: 4px solid #1e3a5f;
     
-        /* Soft off-white text to reduce eye strain compared to pure white */
-        color: #f1f5f9; 
+        /* Your preferred blue for the writing */
+        color: #1e3a5f; 
 
         border-radius: 12px;
         padding: 1rem 1.1rem;
         margin: 0.8rem 0;
-    }
     }
     .prediction-at-risk {
         background: #fff5f5;
