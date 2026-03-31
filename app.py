@@ -578,8 +578,7 @@ elif page == "Prediction":
         col1, col2, col3 = st.columns([1, 3, 1])
         with col2:
             predict_button = st.button("Predict", use_container_width=True)
-            # Short disclaimer always visible under the Predict button
-            st.caption("This is an educational tool, not a screening tool.")
+            
 
         if predict_button:
             input_data = {
