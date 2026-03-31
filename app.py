@@ -578,7 +578,12 @@ elif page == "Prediction":
         col1, col2, col3 = st.columns([1, 3, 1])
         with col2:
             predict_button = st.button("Predict", use_container_width=True)
-            
+            # Short disclaimer always visible under the Predict button (centered)
+            st.markdown(
+                '<div style="text-align:center; color:#6c757d; font-size:0.95rem; margin-top:0.35rem;">'
+                'This is an educational tool, not a screening tool.</div>',
+                unsafe_allow_html=True
+            )
 
         if predict_button:
             input_data = {
@@ -610,5 +615,11 @@ elif page == "Prediction":
                 with b:
                     show_prediction_card("Naive Bayes", nb_label)
 
-            # Reinforce the educational nature of the demo after a prediction
-            st.info("This is an educational tool, not a screening tool. It is not a medical diagnosis.")
+            # Reinforce the educational nature of the demo after a prediction (centered)
+            st.markdown(
+                '<div style="text-align:center; padding:0.6rem; border-radius:8px; '
+                'background:#fff8e1; border:1px solid #ffe8a1; color:#6b4f00; '
+                'font-weight:600;">'
+                'This is an educational tool, not a screening tool. It is not a medical diagnosis.</div>',
+                unsafe_allow_html=True
+            )
