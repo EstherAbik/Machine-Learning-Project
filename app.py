@@ -618,7 +618,7 @@ elif page == "Prediction":
             # Reinforce the educational nature of the demo after a prediction (centered)
             st.markdown(
                 '<div style="text-align:center; padding:0.6rem; border-radius:8px; '
-                'background:#fff8e1; border:1px solid #ffe8a1; color:#6b4f00; '
+                'background:#fff0e6; border:1px solid #ffd1b3; color:#7a3b00; '
                 'font-weight:600;">'
                 'This is an educational tool, not a screening tool. It is not a medical diagnosis.</div>',
                 unsafe_allow_html=True
