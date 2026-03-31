@@ -615,10 +615,4 @@ elif page == "Prediction":
                 with b:
                     show_prediction_card("Naive Bayes", nb_label)
 
-            # Reinforce the educational nature of the demo after a prediction (centered)
-            st.markdown(
-                '<div style="text-align:center; padding:0.6rem; border-radius:8px; '
-                'color:#000000; font-weight:600;">'
-                'This is an educational tool, not a screening tool. It is not a medical diagnosis.</div>',
-                unsafe_allow_html=True
-            )
+            # (post-prediction warning removed per user request)
