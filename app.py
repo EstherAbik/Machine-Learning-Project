@@ -580,7 +580,7 @@ elif page == "Prediction":
             predict_button = st.button("Predict", use_container_width=True)
             # Short disclaimer always visible under the Predict button (centered)
             st.markdown(
-                '<div style="text-align:center; color:#6c757d; font-size:0.95rem; margin-top:0.35rem;">'
+                '<div style="text-align:center; color:#000000; font-size:0.95rem; margin-top:0.35rem;">'
                 'This is an educational tool, not a screening tool.</div>',
                 unsafe_allow_html=True
             )
@@ -618,7 +618,7 @@ elif page == "Prediction":
             # Reinforce the educational nature of the demo after a prediction (centered)
             st.markdown(
                 '<div style="text-align:center; padding:0.6rem; border-radius:8px; '
-                'border:1px solid #2d5a87; color:#7a3b00; font-weight:600;">'
+                'color:#000000; font-weight:600;">'
                 'This is an educational tool, not a screening tool. It is not a medical diagnosis.</div>',
                 unsafe_allow_html=True
             )
