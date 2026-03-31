@@ -76,10 +76,10 @@ st.markdown("""
         font-size: 1.3rem;
     }
     .info-card {
-        /* Your preferred background: Very light grey to pure white */
+        
         background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
     
-        /* Your preferred blue for the left border */
+        
         border-left: 4px solid #1e3a5f;
     
         /* Your preferred blue for the writing */
@@ -578,6 +578,8 @@ elif page == "Prediction":
         col1, col2, col3 = st.columns([1, 3, 1])
         with col2:
             predict_button = st.button("Predict", use_container_width=True)
+            # Short disclaimer always visible under the Predict button
+            st.caption("This is an educational tool, not a screening tool.")
 
         if predict_button:
             input_data = {
@@ -609,4 +611,5 @@ elif page == "Prediction":
                 with b:
                     show_prediction_card("Naive Bayes", nb_label)
 
-            st.info("This is an educational screening demo and not a medical diagnosis.")
+            # Reinforce the educational nature of the demo after a prediction
+            st.info("This is an educational tool, not a screening tool. It is not a medical diagnosis.")
