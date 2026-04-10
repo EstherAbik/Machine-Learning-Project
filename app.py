@@ -82,7 +82,7 @@ st.markdown("""
         
         border-left: 4px solid #1e3a5f;
     
-        /* Your preferred blue for the writing */
+        
         color: #1e3a5f; 
 
         border-radius: 12px;
@@ -615,4 +615,4 @@ elif page == "Prediction":
                 with b:
                     show_prediction_card("Naive Bayes", nb_label)
 
-            # (post-prediction warning removed per user request)
+            
